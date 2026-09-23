@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Grill My Mind</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css">
+  <title>Grill My Mind</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/constellation.css">
 </head>
 <body>
   <div class="app-shell">
-    <aside class="rail">
+    <aside class="rail" id="map-navigation" aria-label="Your explorations" inert>
       <a class="brand" href="/" aria-label="Grill My Mind home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 9v22M9 20h12M21 20V9h10M21 20v11h10"/><circle cx="9" cy="9" r="3"/><circle cx="9" cy="31" r="3"/><circle cx="31" cy="9" r="3"/><circle cx="31" cy="31" r="3"/></svg><span>Grill<br>My Mind</span></a>
       <button id="new-map" class="primary new-map"><span aria-hidden="true">＋</span> New exploration</button>
       <div class="rail-heading">Your explorations</div>
@@ -14,15 +14,15 @@
       <div class="rail-bottom"><div class="local-badge"><span></span> Saved on this device</div><button id="bridge-help" class="text-button">Connect your agent <span aria-hidden="true">↗</span></button><p id="workspace-name"></p></div>
     </aside>
     <main id="main">
-      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="map-title">A place to think</strong></div><button id="bridge-status" class="bridge"><i></i><span>Checking connection</span></button></header>
+      <header class="topbar"><button id="maps-toggle" class="secondary" aria-expanded="false" aria-controls="map-navigation">☷ Maps</button><div class="breadcrumb">Grill My Mind <span>/</span> <strong id="map-title">A place to think</strong></div><div class="topbar-actions"><button id="theme-toggle" class="secondary" aria-pressed="false">Dark mode</button><button id="bridge-status" class="bridge"><i></i><span>Checking connection</span></button></div></header>
       <section id="welcome" class="welcome">
         <div class="welcome-copy"><div class="welcome-symbol" aria-hidden="true">✳</div><h1>Give an idea<br>room to grow.</h1><p>Start with a thought. Ask better questions.<br>Choose the paths worth exploring.</p><button id="start-exploration" class="primary large">Explore an idea <span aria-hidden="true">＋</span></button><button id="open-example" class="text-button example-link">Or look around an example</button></div>
         <div class="welcome-map" aria-hidden="true"><svg viewBox="0 0 520 420"><path d="M170 210 C270 210 220 90 345 90M170 210 C270 210 225 305 345 305"/><circle cx="170" cy="210" r="6"/><circle cx="345" cy="90" r="5"/><circle cx="345" cy="305" r="5"/></svg><div class="specimen root-specimen"><span>Your starting point</span><strong>What if…</strong><p>Every good question opens a door.</p></div><div class="specimen top-specimen"><span>Another possibility</span><strong>What haven't we considered?</strong></div><div class="specimen bottom-specimen"><span>A direction to explore</span><strong>Let's look a little closer.</strong><div class="specimen-pill">You choose the next step</div></div></div>
       </section>
       <section id="workspace" class="workspace hidden" aria-label="Mind map workspace">
         <div class="canvas-column"><div class="canvas-heading"><div><h1 id="canvas-title"></h1><p id="canvas-subtitle"></p></div><span id="saved-state" class="saved-state">Saved</span></div>
-          <div id="canvas" class="canvas" aria-label="Idea map. Drag the background to pan. Use the zoom buttons to zoom."><div id="world" class="world"><svg id="edges" aria-hidden="true"></svg><div id="nodes"></div></div><div id="empty-hint" class="canvas-hint hidden"></div></div>
-          <div class="canvas-toolbar"><div class="legend"><span><i class="suggested-dot"></i> Suggested</span><span><i class="question-dot"></i> Needs you</span><span><i class="explored-dot"></i> Explored</span></div><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">＋</button><button id="fit-map" aria-label="Fit map to canvas" title="Fit map">⛶</button></div></div>
+          <div id="canvas" class="canvas" aria-label="Constellation. Drag a node to move it or the background to pan. Focus a node and use Alt plus arrow keys to move it."><div id="world" class="world"><svg id="edges" aria-hidden="true"></svg><div id="nodes"></div></div><div id="empty-hint" class="canvas-hint hidden"></div></div>
+          <div class="canvas-toolbar"><div class="legend"><span><i class="suggested-dot"></i> Unexplored</span><span><i class="queued-dot"></i> Queued</span><span><i class="question-dot"></i> Needs you</span><span><i class="explored-dot"></i> Explored</span></div><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">＋</button><button id="fit-map" aria-label="Fit map to canvas" title="Fit map">⛶</button></div></div><div class="canvas-instruction">Drag nodes to arrange your thinking · connections stay attached</div>
         </div><aside id="detail" class="detail" aria-label="Selected idea"></aside>
       </section>
     </main>

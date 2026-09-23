@@ -3,10 +3,10 @@
   "id": "map-3e4d4390",
   "title": "Grill My Mind",
   "rootId": "node-3f23c237",
-  "revision": 5,
+  "revision": 10,
   "originalIdea": "Grill My Mind is a skill for Codex, Claude Code, and GitHub Copilot. It opens a localhost mind map where I can describe an idea, answer questions, and choose which suggested branches agents explore. Maps should save readable structured knowledge in the repo and resume across sessions. Use the existing agent, keep context focused, and reach an MVP quickly so we can learn from trying it.",
   "createdAt": "2026-09-23T03:19:28.430Z",
-  "updatedAt": "2026-09-23T03:34:13.554Z",
+  "updatedAt": "2026-09-23T04:35:33.136Z",
   "nodes": [
     {
       "id": "node-3f23c237",
@@ -48,7 +48,7 @@
       "summary": "Measure map context per investigation, idle-wait overhead, and how much history accumulates through several branches. Consider compacting or delegating only if the trial shows a problem.",
       "kind": "research",
       "parentId": "node-3f23c237",
-      "status": "suggested",
+      "status": "queued",
       "reviewState": "unreviewed",
       "contentRevision": 1,
       "questions": [],
@@ -135,6 +135,13 @@
       "status": "queued",
       "reason": "User activated this branch. Explore only this direction.",
       "createdAt": "2026-09-23T03:30:12.192Z"
+    },
+    {
+      "id": "job-66eee286",
+      "nodeId": "node-5d904151",
+      "status": "queued",
+      "reason": "User activated this branch. Explore only this direction.",
+      "createdAt": "2026-09-23T04:35:33.136Z"
     }
   ],
   "history": [
@@ -161,6 +168,12 @@
       "type": "activated",
       "nodeId": "node-dfb92941",
       "detail": "User activated this branch. Explore only this direction."
+    },
+    {
+      "at": "2026-09-23T04:35:33.136Z",
+      "type": "activated",
+      "nodeId": "node-5d904151",
+      "detail": "User activated this branch. Explore only this direction."
     }
   ],
   "view": {
@@ -168,6 +181,14 @@
       "node-20f918e5": {
         "x": 366,
         "y": 376
+      },
+      "node-3f23c237": {
+        "x": 34.78260869565217,
+        "y": 119.1304347826087
+      },
+      "node-5d904151": {
+        "x": 373.0434782608696,
+        "y": -47.82608695652178
       }
     }
   }

@@ -74,12 +74,7 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
         if (match?.[2] === 'fail') return send(res, 200, publicMap(await store.fail(match[1], body.jobId, body.claimKey, body.reason)));
         throw new Problem('Route not found.', 404);
       }
-      const names = { '/': 'index.html', '/app.js': 'app.js', '/style.css': 'style.css', '/favicon.svg': 'favicon.svg' };
-      if (process.env.NODE_ENV !== 'production') {
-        if (['constellation', 'paths'].includes(url.searchParams.get('variant'))) names['/'] = 'prototype.html';
-        names['/prototype.js'] = 'prototype.js';
-        names['/prototype.css'] = 'prototype.css';
-      }
+      const names = { '/': 'index.html', '/app.js': 'app.js', '/graph.js': 'graph.js', '/style.css': 'style.css', '/constellation.css': 'constellation.css', '/favicon.svg': 'favicon.svg' };
       if (req.method !== 'GET' || !names[url.pathname]) throw new Problem('Page not found.', 404);
       const file = names[url.pathname];
       const types = { html: 'text/html', js: 'text/javascript', css: 'text/css', svg: 'image/svg+xml' };

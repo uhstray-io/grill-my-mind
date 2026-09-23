@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "id": "map-65608420",
+  "title": "QA — Live constellation",
+  "rootId": "node-d9b28cb6",
+  "revision": 14,
+  "originalIdea": "QA validation only for issue 08. Verify that the real constellation supports agent questions, answers, inactive suggestions, saved node movement and reopening. Test answers and acceptance in this map are fixtures, not user product decisions.",
+  "createdAt": "2026-09-23T04:26:47.791Z",
+  "updatedAt": "2026-09-23T04:29:53.595Z",
+  "nodes": [
+    {
+      "id": "node-d9b28cb6",
+      "title": "QA — Live constellation",
+      "prompt": "QA validation only for issue 08. Verify that the real constellation supports agent questions, answers, inactive suggestions, saved node movement and reopening. Test answers and acceptance in this map are fixtures, not user product decisions.",
+      "body": "Observed in the live browser: the QA answer returned the root to Queued. The public CLI then claimed the same root with that answer in its context. Dragging Verify saved positions stored x=104.34782608695654 and y=-219.37391304347824. After reloading, the node had those exact coordinates and its SVG connection ended at the same point. Both suggested branches remained Unexplored. Dark mode also survived the reload.\n\nThis is a real Codex validation result based on local code, automated checks, CLI responses, and browser observations. The answer itself is explicitly a QA fixture. It is not a user product decision.\n\nFurther trial work: explicitly activate a suggested branch, check cancel/retry and acceptance presentation, then return to the owner's original map.",
+      "summary": "The QA answer continued the same root investigation, and the dragged branch retained its coordinates after a page reload.",
+      "kind": "idea",
+      "parentId": null,
+      "status": "explored",
+      "reviewState": "accepted",
+      "contentRevision": 5,
+      "questions": [
+        {
+          "id": "q-e52cc26d",
+          "text": "QA fixture: which persistence behavior should this trial check after moving a node?",
+          "answer": "QA fixture answer: keep the moved node coordinates and attached connections after reloading; leave every unactivated suggestion inactive.",
+          "answeredAt": "2026-09-23T04:27:59.503Z"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Local QA workspace observation",
+          "url": "http://127.0.0.1:4317/#map-65608420",
+          "note": "This live local page was inspected during the test. It demonstrated the queued/running/question flow, restored node coordinates, and connected SVG endpoints. It is a local validation reference, not independent external research.",
+          "retrievedAt": "2026-09-23T04:28:36.689Z"
+        }
+      ],
+      "stale": false,
+      "createdAt": "2026-09-23T04:26:47.791Z",
+      "acceptedAt": "2026-09-23T04:28:53.759Z",
+      "acceptedBy": "user"
+    },
+    {
+      "id": "node-cd3ce286",
+      "title": "Verify saved positions",
+      "prompt": "Move this node, reload the page, and confirm the saved coordinates and incident connections are restored.",
+      "body": "The browser moved this node to x=104.34782608695654, y=-219.37391304347824; reloading restored it and its incident edge. Alt+Right then saved x=128.34782608695656 with the same y while this job was running. The canonical JSON reached revision 13.\n\nThe explicit activation/cancel/retry UI sequence was Queued, Ready to retry, Queued. The CLI claimed only the retried branch; Review dense maps later remained suggested. These are validation observations in a QA map, not owner product decisions.\n\nThe following possible direction remains unactivated. Dense real-world navigation is outside this small end-to-end trial.",
+      "summary": "Pointer and keyboard movement save presentation coordinates without changing branch authorization or invalidating a running investigation.",
+      "kind": "research",
+      "parentId": "node-d9b28cb6",
+      "status": "explored",
+      "reviewState": "unreviewed",
+      "contentRevision": 2,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T04:27:21.786Z"
+    },
+    {
+      "id": "node-04b88d8c",
+      "title": "Review dense maps later",
+      "prompt": "A future trial should examine navigation with hundreds of real branches. This QA suggestion stays inactive.",
+      "body": "A future trial should examine navigation with hundreds of real branches. This QA suggestion stays inactive.",
+      "summary": "A future trial should examine navigation with hundreds of real branches. This QA suggestion stays inactive.",
+      "kind": "research",
+      "parentId": "node-d9b28cb6",
+      "status": "suggested",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T04:27:21.786Z"
+    },
+    {
+      "id": "node-f0acedf9",
+      "title": "Measure dense graph navigation",
+      "prompt": "Future QA: evaluate readability and selection with hundreds of real nodes, varied title lengths, and cross-links. Do not run automatically.",
+      "body": "Future QA: evaluate readability and selection with hundreds of real nodes, varied title lengths, and cross-links. Do not run automatically.",
+      "summary": "Future QA: evaluate readability and selection with hundreds of real nodes, varied title lengths, and cross-links. Do not run automatically.",
+      "kind": "research",
+      "parentId": "node-cd3ce286",
+      "status": "suggested",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T04:29:53.595Z"
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-d9b28cb6",
+      "to": "node-cd3ce286",
+      "type": "contains"
+    },
+    {
+      "from": "node-d9b28cb6",
+      "to": "node-04b88d8c",
+      "type": "contains"
+    },
+    {
+      "from": "node-cd3ce286",
+      "to": "node-f0acedf9",
+      "type": "contains"
+    },
+    {
+      "from": "node-cd3ce286",
+      "to": "node-04b88d8c",
+      "type": "related_to"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job-c6064452",
+      "nodeId": "node-d9b28cb6",
+      "status": "completed",
+      "reason": "User described a new idea. Identify useful directions and ask focused questions.",
+      "createdAt": "2026-09-23T04:26:47.791Z",
+      "worker": "codex-issue08",
+      "claimKey": "783bc390-c1dc-4e2d-8a85-a30ece2f6bc4",
+      "startedAt": "2026-09-23T04:26:53.645Z",
+      "inputSignature": "8bbfa1459c8bcf1da50b73f41b9faeb9e38b1cd909acd19d47af080563e115a4",
+      "contextCharacters": 1059,
+      "finishedAt": "2026-09-23T04:27:21.786Z",
+      "result": {
+        "summary": "The live constellation now uses the real saved-map and command-bridge workflow. A focused persistence trial is next.",
+        "body": "Codex inspected the implementation and ran 19 passing checks. The browser created this QA map, showed its queued node, and then reflected the CLI claim as Researching with Agent is listening. These are actual local observations, not a simulated timer.\n\nThe static layout preserves explicit coordinates and keeps suggested nodes inactive. Automated HTTP coverage confirms that moving a claimed node does not invalidate its research and that coordinates survive a server restart. The browser still needs to exercise movement and reopening.\n\nThis session is labeled QA: its question answers and accepted findings are test fixtures, not decisions made by the owner.",
+        "questions": [
+          {
+            "id": "q-e52cc26d",
+            "text": "QA fixture: which persistence behavior should this trial check after moving a node?",
+            "answer": null
+          }
+        ],
+        "suggestions": [
+          {
+            "title": "Verify saved positions",
+            "body": "Move this node, reload the page, and confirm the saved coordinates and incident connections are restored.",
+            "kind": "research"
+          },
+          {
+            "title": "Review dense maps later",
+            "body": "A future trial should examine navigation with hundreds of real branches. This QA suggestion stays inactive.",
+            "kind": "research"
+          }
+        ],
+        "sources": [],
+        "links": []
+      },
+      "stale": false
+    },
+    {
+      "id": "job-5b8e0e21",
+      "nodeId": "node-d9b28cb6",
+      "status": "completed",
+      "reason": "User answered the branch questions. Continue this investigation.",
+      "createdAt": "2026-09-23T04:27:59.503Z",
+      "worker": "codex-issue08",
+      "claimKey": "104a50b8-a129-4033-a6d4-361ca9924724",
+      "startedAt": "2026-09-23T04:28:05.092Z",
+      "inputSignature": "04e932b5791fcce24268bed7fafd457af0af52718502a70d003de250d4649d6a",
+      "contextCharacters": 2071,
+      "finishedAt": "2026-09-23T04:28:36.689Z",
+      "result": {
+        "summary": "The QA answer continued the same root investigation, and the dragged branch retained its coordinates after a page reload.",
+        "body": "Observed in the live browser: the QA answer returned the root to Queued. The public CLI then claimed the same root with that answer in its context. Dragging Verify saved positions stored x=104.34782608695654 and y=-219.37391304347824. After reloading, the node had those exact coordinates and its SVG connection ended at the same point. Both suggested branches remained Unexplored. Dark mode also survived the reload.\n\nThis is a real Codex validation result based on local code, automated checks, CLI responses, and browser observations. The answer itself is explicitly a QA fixture. It is not a user product decision.\n\nFurther trial work: explicitly activate a suggested branch, check cancel/retry and acceptance presentation, then return to the owner's original map.",
+        "questions": [],
+        "suggestions": [],
+        "sources": [
+          {
+            "title": "Local QA workspace observation",
+            "url": "http://127.0.0.1:4317/#map-65608420",
+            "note": "This live local page was inspected during the test. It demonstrated the queued/running/question flow, restored node coordinates, and connected SVG endpoints. It is a local validation reference, not independent external research.",
+            "retrievedAt": "2026-09-23T04:28:36.689Z"
+          }
+        ],
+        "links": []
+      },
+      "stale": false
+    },
+    {
+      "id": "job-15afcff1",
+      "nodeId": "node-cd3ce286",
+      "status": "cancelled",
+      "reason": "User activated this branch. Explore only this direction.",
+      "createdAt": "2026-09-23T04:29:01.993Z",
+      "finishedAt": "2026-09-23T04:29:02.260Z"
+    },
+    {
+      "id": "job-88b7030a",
+      "nodeId": "node-cd3ce286",
+      "status": "completed",
+      "reason": "User activated this branch. Explore only this direction.",
+      "createdAt": "2026-09-23T04:29:02.539Z",
+      "worker": "codex-issue08",
+      "claimKey": "35cf743a-a3ce-4eee-a336-2b0f882b5951",
+      "startedAt": "2026-09-23T04:29:08.712Z",
+      "inputSignature": "48ac5ed4c7951abe0ee380a8d8f34eb45c023bea06df2f34c67745a55e5e78bf",
+      "contextCharacters": 1727,
+      "finishedAt": "2026-09-23T04:29:53.595Z",
+      "result": {
+        "summary": "Pointer and keyboard movement save presentation coordinates without changing branch authorization or invalidating a running investigation.",
+        "body": "The browser moved this node to x=104.34782608695654, y=-219.37391304347824; reloading restored it and its incident edge. Alt+Right then saved x=128.34782608695656 with the same y while this job was running. The canonical JSON reached revision 13.\n\nThe explicit activation/cancel/retry UI sequence was Queued, Ready to retry, Queued. The CLI claimed only the retried branch; Review dense maps later remained suggested. These are validation observations in a QA map, not owner product decisions.\n\nThe following possible direction remains unactivated. Dense real-world navigation is outside this small end-to-end trial.",
+        "questions": [],
+        "suggestions": [
+          {
+            "title": "Measure dense graph navigation",
+            "body": "Future QA: evaluate readability and selection with hundreds of real nodes, varied title lengths, and cross-links. Do not run automatically.",
+            "kind": "research"
+          }
+        ],
+        "sources": [],
+        "links": [
+          {
+            "from": "node-cd3ce286",
+            "to": "node-04b88d8c",
+            "type": "related_to"
+          }
+        ]
+      },
+      "stale": false
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-23T04:26:47.791Z",
+      "type": "activated",
+      "nodeId": "node-d9b28cb6",
+      "detail": "User described a new idea. Identify useful directions and ask focused questions."
+    },
+    {
+      "at": "2026-09-23T04:26:53.646Z",
+      "type": "started",
+      "nodeId": "node-d9b28cb6",
+      "detail": "codex-issue08; context packet 1059 characters"
+    },
+    {
+      "at": "2026-09-23T04:27:21.786Z",
+      "type": "result",
+      "nodeId": "node-d9b28cb6",
+      "detail": "job-c6064452"
+    },
+    {
+      "at": "2026-09-23T04:27:59.503Z",
+      "type": "answered",
+      "nodeId": "node-d9b28cb6",
+      "detail": "q-e52cc26d"
+    },
+    {
+      "at": "2026-09-23T04:27:59.503Z",
+      "type": "activated",
+      "nodeId": "node-d9b28cb6",
+      "detail": "User answered the branch questions. Continue this investigation."
+    },
+    {
+      "at": "2026-09-23T04:28:05.092Z",
+      "type": "started",
+      "nodeId": "node-d9b28cb6",
+      "detail": "codex-issue08; context packet 2071 characters"
+    },
+    {
+      "at": "2026-09-23T04:28:36.689Z",
+      "type": "result",
+      "nodeId": "node-d9b28cb6",
+      "detail": "job-5b8e0e21"
+    },
+    {
+      "at": "2026-09-23T04:28:53.759Z",
+      "type": "accepted",
+      "nodeId": "node-d9b28cb6",
+      "detail": ""
+    },
+    {
+      "at": "2026-09-23T04:29:01.993Z",
+      "type": "activated",
+      "nodeId": "node-cd3ce286",
+      "detail": "User activated this branch. Explore only this direction."
+    },
+    {
+      "at": "2026-09-23T04:29:02.260Z",
+      "type": "cancelled",
+      "nodeId": "node-cd3ce286",
+      "detail": ""
+    },
+    {
+      "at": "2026-09-23T04:29:02.539Z",
+      "type": "activated",
+      "nodeId": "node-cd3ce286",
+      "detail": "User activated this branch. Explore only this direction."
+    },
+    {
+      "at": "2026-09-23T04:29:08.712Z",
+      "type": "started",
+      "nodeId": "node-cd3ce286",
+      "detail": "codex-issue08; context packet 1727 characters"
+    },
+    {
+      "at": "2026-09-23T04:29:53.595Z",
+      "type": "result",
+      "nodeId": "node-cd3ce286",
+      "detail": "job-88b7030a"
+    }
+  ],
+  "view": {
+    "positions": {
+      "node-cd3ce286": {
+        "x": 128.34782608695656,
+        "y": -219.37391304347824
+      }
+    }
+  }
+}

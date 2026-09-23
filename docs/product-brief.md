@@ -29,6 +29,7 @@ Status: first MVP implemented after the user approved the execution, editing, an
 - Use the invoking agent first, with bounded context and usage measurements; keep that integration replaceable.
 - Let agents read saved maps, but route edits through the app/CLI.
 - An activated branch investigates until it has findings or needs a user answer. New directions require separate activation.
+- On 2026-09-23, selected Constellation/version 1 for the working prototype, including light/dark modes and draggable connected nodes. Research paths/version 2 is rejected. The original card map is saved for comparison; future refinement or replacement remains possible. See [saved prototypes and verification](../prototypes/README.md).
 
 ## Open product decisions
 

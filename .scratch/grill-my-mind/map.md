@@ -24,8 +24,14 @@ Determine a buildable design for Grill My Mind: an installable skill with a loca
 - [Decide whether the invoking agent or the application runs exploration](issues/04-execution-ownership.md): use the invoking agent and test context growth during real use.
 - [Decide how users and agents edit saved maps](issues/05-editing-authority.md): files are readable; app/CLI commands own mutations.
 - [Define what activating one branch authorizes](issues/06-activation-scope.md): investigate that branch until findings or user input; suggestions remain inactive.
+- [Select and preserve the UI prototype](issues/07-ui-prototype-selection.md): resolved 2026-09-23. Constellation/version 1 is selected for the working prototype; version 2 is rejected. Preserve the original map for comparison. This decision can evolve after real use.
+- [Connect Constellation to the live map](issues/08-live-constellation.md): resolved 2026-09-23. Real sessions and agent commands now power the constellation. Saved positions survive restart; standalone snapshots remain unchanged. See the live QA record in [verification](../../docs/verification.md).
 
 Research synthesis: [persistent exploration workspace proposal](../../docs/research/recommendation.md). Research conclusions do not constitute user approval of an implementation architecture.
+
+## Follow-up work
+
+- Issues 01–08 are resolved. Next candidates are a longer real exploration measuring context growth and dense-map navigation, plus live Claude Code/Copilot trials. No further implementation ticket has been selected yet.
 
 ## Not yet specified
 
@@ -33,7 +39,7 @@ Research synthesis: [persistent exploration workspace proposal](../../docs/resea
 - Provider availability, rollout order, and which Copilot surfaces must provide the full localhost experience.
 - Later schema migrations and history retention as maps grow.
 - Live Claude Code and Copilot trials of the packaged command bridge.
-- Changes to visual design and the interaction loop based on MVP feedback.
+- Further visual and interaction refinements after integrating the selected constellation design.
 - Context accumulation across many real investigations, beyond bounded per-job retrieval.
 
 ## Out of scope

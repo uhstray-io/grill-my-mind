@@ -2,7 +2,7 @@
 
 Question: does a dense, spatial constellation or an ordered set of research paths make a complex idea easier and more inviting to explore?
 
-Run `node skills/grill-my-mind/scripts/server.mjs` from the repository root. Open `http://127.0.0.1:4317/?variant=constellation` or `?variant=paths`. The bottom switcher preserves the session hash and changes the URL. These routes are disabled when NODE_ENV=production.
+Historical study notes: the localhost variant selector has been retired by issue 08. The server now serves the real constellation workspace, including for old variant URLs. Use the [standalone snapshots](../../../prototypes/README.md) to revisit the archived study and original card design. The descriptions below record the study's behavior before integration.
 
 ## Visual plan
 
@@ -35,7 +35,7 @@ Both variants use the same illustrative Grill My Mind fixture (79 nodes), with o
 - Does the question interruption feel natural? Is the glow meaningful?
 - Try 200+ real nodes, touch navigation, and dense cross-links later.
 
-No winner selected. Keep these isolated; integrate a chosen direction only after user feedback, then delete the losing prototype and the route gate. This is an interaction study, not an implementation of live research.
+Decision recorded 2026-09-23: the user selected Constellation/version 1 for the next working prototype and rejected Research paths/version 2. Enhancements or a future change of direction remain possible. The original card map is retained for comparison. Standalone snapshots and static verification are recorded in [prototypes/README.md](../../../prototypes/README.md). Prototype selection is resolved; live integration is tracked separately in [issue 08](../../../.scratch/grill-my-mind/issues/08-live-constellation.md). Remove the rejected variant from the active UI during that integration, preserving the standalone snapshots. These current studies still simulate research.
 
 ## Light mode and movable nodes
 

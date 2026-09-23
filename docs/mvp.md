@@ -17,6 +17,8 @@ For this first version, a single `map.json` per map is authoritative, including 
 
 ## Visual direction
 
+The list below records the first card-based MVP. On 2026-09-23 the user selected Constellation/version 1, which is now integrated with the real map and agent bridge. The working UI has light/dark modes, a radial node layout, a contextual inspector, a Maps menu, persistent connected-node dragging, and keyboard movement. The original map is retained as a reference snapshot. See [the design decision](../prototypes/README.md) and [completed integration issue](../.scratch/grill-my-mind/issues/08-live-constellation.md).
+
 - Canvas: ice blue `#edf2f8`; ink: navy `#192b4d`; action: royal blue `#315be8`; questions: burnt orange `#a64f26`; findings: teal `#206b60`; paper: white `#ffffff`.
 - Typography: Georgia for the idea/title, Segoe UI for controls and readable body text; no external font request.
 - Layout: quiet session rail, generous pannable idea canvas, contextual reading/question panel. Left-align controls and detail; place the root and branches spatially.

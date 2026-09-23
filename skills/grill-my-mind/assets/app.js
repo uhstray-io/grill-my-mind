@@ -1,9 +1,20 @@
+import { constellationLayout, connectionPath, presentation, workLabels } from './graph.js';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const state = { token: '', map: null, maps: [], selected: null, bridge: {}, scale: 1, x: 0, y: 0, positions: {}, drafts: {}, refreshing: false };
-const labels = { suggested: 'Suggested', queued: 'Queued', running: 'Exploring', 'awaiting-answer': 'Needs your answer', explored: 'Explored', interrupted: 'Ready to retry' };
+const labels = workLabels;
 const glyphs = { idea: '✳', research: '◇', question: '?', decision: '✓', risk: '△' };
-let toastTimer, gesture, suppressClick = false;
+let toastTimer, gesture, suppressClick = false, openVersion = 0, actionTail = Promise.resolve();
+const accents = ['var(--teal)', 'var(--blue)', 'var(--orange)'];
+function navigation(open) { document.body.classList.toggle('rail-open', open); $('#map-navigation').inert = !open; $('#maps-toggle').setAttribute('aria-expanded', String(open)); }
+$('#maps-toggle').onclick = () => navigation(!document.body.classList.contains('rail-open'));
+document.addEventListener('keydown', event => { if (event.key === 'Escape') navigation(false); });
+const themeQuery = new URL(location.href).searchParams.get('theme');
+let dark = (themeQuery || localStorage.getItem('grill-my-mind-theme') || 'light') === 'dark';
+function theme() { document.documentElement.dataset.theme = dark ? 'dark' : 'light'; $('#theme-toggle').setAttribute('aria-pressed', String(dark)); localStorage.setItem('grill-my-mind-theme', dark ? 'dark' : 'light'); }
+$('#theme-toggle').onclick = () => { dark = !dark; theme(); }; theme();
+// Legacy prototype links now open the real workspace; theme is a preference, not a route.
+const currentUrl = new URL(location.href); currentUrl.searchParams.delete('variant'); currentUrl.searchParams.delete('theme'); history.replaceState(null, '', currentUrl);
 function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 6500); }
 async function api(route, body) {
   const response = await fetch(`/api${route}`, { method: body ? 'POST' : 'GET', headers: { Authorization: `Bearer ${state.token}`, ...(body ? { 'Content-Type': 'application/json' } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) });
@@ -29,57 +40,50 @@ function renderRail() {
   if ($('#map-list').innerHTML !== html) $('#map-list').innerHTML = html;
 }
 async function refresh() {
-  if (state.refreshing || document.hidden) return;
+  if (state.refreshing || state.mutating || gesture || document.hidden) return;
   state.refreshing = true;
+  const version = openVersion;
   try {
     const data = await api('/maps'); state.maps = data.maps; state.bridge = data.bridge; renderRail(); connectionView();
     if (state.map && data.maps.find(m => m.id === state.map.id)?.revision !== state.map.revision) {
-      state.map = await api(`/maps/${state.map.id}`); renderMap();
+      const mapId = state.map.id, map = await api(`/maps/${mapId}`);
+      if (version === openVersion && state.map?.id === mapId && !state.mutating && !gesture && map.revision >= state.map.revision) { state.map = map; renderMap(); }
     }
   } catch { connectionView(true); }
   finally { state.refreshing = false; }
 }
 async function openMap(id) {
+  const version = ++openVersion;
   try {
-    state.map = await api(`/maps/${id}`); state.selected = state.map.rootId;
+    const map = await api(`/maps/${id}`); if (version !== openVersion) return;
+    state.map = map; state.selected = state.map.rootId; navigation(false);
     localStorage.setItem('grill-my-mind-map', id); location.hash = id;
     renderMap(true); renderRail();
   } catch (error) { toast(error.message); }
 }
 function layout() {
-  const m = state.map; const positions = {}; let leaf = 0;
-  function visit(node, depth) {
-    const children = m.nodes.filter(n => n.parentId === node.id);
-    let y;
-    if (!children.length) y = leaf++ * 190;
-    else { const ys = children.map(n => visit(n, depth + 1)); y = (ys[0] + ys.at(-1)) / 2; }
-    positions[node.id] = { x: depth * 365, y }; return y;
-  }
-  visit(m.nodes.find(n => n.id === m.rootId), 0);
-  for (const n of m.nodes) positions[n.id] = m.view.positions[n.id] || positions[n.id] || { x: 0, y: 0 };
-  state.positions = positions;
+  const result = constellationLayout(state.map); state.positions = result.positions; state.domains = result.domains;
 }
 function renderEdges() {
   $('#edges').innerHTML = state.map.edges.map(e => {
     const a = state.positions[e.from], b = state.positions[e.to]; if (!a || !b) return '';
-    const start = { x: a.x + 268, y: a.y + 83 }, end = { x: b.x, y: b.y + 83 };
-    const middle = (start.x + end.x) / 2;
-    return `<path class="edge ${e.type === 'contains' ? '' : 'semantic'}" d="M ${start.x} ${start.y} C ${middle} ${start.y}, ${middle} ${end.y}, ${end.x} ${end.y}"/>`;
+    const target = state.map.nodes.find(n => n.id === e.to);
+    return `<path class="edge ${e.type === 'contains' ? '' : 'semantic'} ${presentation(target).lit ? 'lit' : ''}" style="--accent:${accents[state.domains[e.to] % accents.length]}" d="${connectionPath(a, b)}"><title>${esc(e.type.replaceAll('_', ' '))}</title></path>`;
   }).join('');
 }
 function renderMap(fit = false) {
-  if (!state.map) return;
+  if (!state.map || gesture) return;
   const topologyChanged = state.layoutMap !== state.map.id || state.layoutCount !== state.map.nodes.length;
   state.layoutMap = state.map.id; state.layoutCount = state.map.nodes.length;
   $('#welcome').classList.add('hidden'); $('#workspace').classList.remove('hidden');
   $('#map-title').textContent = state.map.title; $('#canvas-title').textContent = state.map.title;
-  $('#canvas-subtitle').textContent = state.map.demo ? 'An example to look around. Its starting content is illustrative.' : 'Follow your curiosity. Choose a branch to take it further.';
+  $('#canvas-subtitle').textContent = state.map.demo ? 'Example content · selected branches use your real agent.' : 'A field of possibilities. You choose which ones to explore.';
   $('#saved-state').textContent = 'Saved locally';
   layout();
   $('#nodes').innerHTML = state.map.nodes.map(n => {
     const pos = state.positions[n.id];
-    const active = ['suggested', 'interrupted'].includes(n.status);
-    return `<article class="node ${n.kind} ${n.status} ${n.id === state.map.rootId ? 'root' : ''} ${n.reviewState === 'accepted' ? 'accepted' : ''} ${n.id === state.selected ? 'selected' : ''}" data-node="${n.id}" style="left:${pos.x}px;top:${pos.y}px" aria-label="${esc(n.title)}, ${labels[n.status]}"><div class="node-head" title="Drag to move this idea"><span class="node-glyph" aria-hidden="true">${glyphs[n.kind]}</span><span>${n.kind === 'idea' ? 'Starting idea' : n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><i class="status-dot"></i></div><button class="node-title" data-select="${n.id}">${esc(n.title)}</button><p class="node-summary">${esc(n.summary)}</p><div class="node-footer"><span class="${n.status === 'awaiting-answer' ? 'needs-you' : ''}">${n.stale ? 'Needs review' : n.reviewState === 'accepted' ? 'Accepted' : labels[n.status]}</span>${active ? `<button class="explore-small" data-explore="${n.id}">${n.status === 'interrupted' ? 'Retry' : 'Explore'} <span aria-hidden="true">＋</span></button>` : n.status === 'awaiting-answer' ? `<button class="explore-small" data-select="${n.id}">Answer</button>` : ''}</div></article>`;
+    const root = n.id === state.map.rootId, status = presentation(n), major = root || n.parentId === state.map.rootId;
+    return `<button class="node ${n.kind} ${n.status} ${root ? 'root' : ''} ${major ? 'major' : ''} ${status.lit ? 'lit' : ''} ${n.stale ? 'stale' : ''} ${n.reviewState === 'accepted' ? 'accepted' : ''} ${n.id === state.selected ? 'selected' : ''}" data-node="${n.id}" style="left:${pos.x}px;top:${pos.y}px;--accent:${accents[state.domains[n.id] % accents.length]}" aria-label="${esc(n.title)}, ${esc(status.label)}" aria-pressed="${n.id === state.selected}"><span class="node-symbol" aria-hidden="true">${glyphs[n.kind]}</span><span class="node-badge" aria-hidden="true">${n.stale ? '!' : n.status === 'awaiting-answer' ? '?' : n.reviewState === 'accepted' ? '✓' : ''}</span><span class="node-tooltip">${esc(n.title)} · ${esc(status.label)}</span>${major ? `<span class="node-caption">${esc(n.title)}</span>` : ''}</button>`;
   }).join('');
   renderEdges();
   if (!$('#detail').contains(document.activeElement) || !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) renderDetail();
@@ -88,20 +92,20 @@ function renderMap(fit = false) {
 function transform() { $('#world').style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`; $('#zoom-value').textContent = `${Math.round(state.scale * 100)}%`; }
 function fitMap() {
   if (!state.map) return;
-  const p = Object.values(state.positions); const minX = Math.min(...p.map(p => p.x)), minY = Math.min(...p.map(p => p.y));
-  const width = Math.max(...p.map(p => p.x)) + 268 - minX, height = Math.max(...p.map(p => p.y)) + 176 - minY;
-  const canvas = $('#canvas'); state.scale = Math.max(.25, Math.min(1, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 40) / height));
+  const p = Object.values(state.positions); const minX = Math.min(...p.map(p => p.x)) - 115, minY = Math.min(...p.map(p => p.y)) - 60;
+  const width = Math.max(...p.map(p => p.x)) + 115 - minX, height = Math.max(...p.map(p => p.y)) + 110 - minY;
+  const canvas = $('#canvas'); state.scale = Math.max(.05, Math.min(1.15, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 40) / height));
   state.x = (canvas.clientWidth - width * state.scale) / 2 - minX * state.scale;
   state.y = (canvas.clientHeight - height * state.scale) / 2 - minY * state.scale;
   transform();
 }
 function zoom(factor, cx = $('#canvas').clientWidth / 2, cy = $('#canvas').clientHeight / 2) {
-  const next = Math.max(.2, Math.min(1.8, state.scale * factor)); const ratio = next / state.scale;
+  const next = Math.max(.05, Math.min(3, state.scale * factor)); const ratio = next / state.scale;
   state.x = cx - (cx - state.x) * ratio; state.y = cy - (cy - state.y) * ratio; state.scale = next; transform();
 }
 function selectNode(nodeId) {
   state.selected = nodeId;
-  for (const card of document.querySelectorAll('.node')) card.classList.toggle('selected', card.dataset.node === nodeId);
+  for (const card of document.querySelectorAll('.node')) { card.classList.toggle('selected', card.dataset.node === nodeId); card.setAttribute('aria-pressed', String(card.dataset.node === nodeId)); }
   renderDetail();
 }
 function renderDetail() {
@@ -111,7 +115,7 @@ function renderDetail() {
   const job = state.map.jobs.filter(j => j.nodeId === n.id).at(-1);
   const related = state.map.edges.filter(e => e.type !== 'contains' && (e.from === n.id || e.to === n.id));
   const questionHtml = n.questions.map(q => q.answer ? `<div class="answer"><strong>${esc(q.text)}</strong>${esc(q.answer)}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] || '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
-  $('#detail').innerHTML = `<div class="detail-kind"><span class="kind-tag"><b aria-hidden="true">${glyphs[n.kind]}</b>${n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><span class="status-label ${pending ? 'pending' : ''}">${n.reviewState === 'accepted' ? 'Accepted' : labels[n.status]}</span></div><h2>${esc(n.title)}</h2><p class="detail-summary">${esc(n.summary)}</p>
+  $('#detail').innerHTML = `<div class="detail-kind"><span class="kind-tag"><b aria-hidden="true">${glyphs[n.kind]}</b>${n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><span class="status-label ${pending ? 'pending' : ''}">${esc(presentation(n).label)}</span></div><h2>${esc(n.title)}</h2><p class="detail-summary">${esc(n.summary)}</p>
     ${n.stale ? '<p class="state-note warning">An earlier premise changed. These findings need another look before you rely on them.</p>' : ''}
     ${n.status === 'suggested' ? '<p class="state-note">A possible direction. Nothing runs until you choose to explore it.</p>' : ''}
     ${n.status === 'queued' ? `<p class="state-note">${state.bridge.listening ? 'Your agent will pick up this branch next.' : 'Saved in the queue. Connect your agent to start this investigation.'}</p>` : ''}
@@ -127,17 +131,27 @@ function renderDetail() {
     <details><summary>Revise this premise</summary><form id="revise-form" data-node-id="${n.id}"><label for="revised-body">What changed?</label><textarea id="revised-body" name="body" rows="5" maxlength="16000" required data-draft="${n.id}-revision">${esc(state.drafts[`${n.id}-revision`] || n.prompt || n.body)}</textarea><p class="form-note">Dependent findings will be marked for review. Research won't restart automatically.</p><button type="submit" class="secondary">Save revised premise</button></form></details>
     ${job?.contextCharacters ? `<p class="run-note">Last investigation used ${job.contextCharacters.toLocaleString()} characters of map context. Only relevant context is sent.</p>` : ''}`;
 }
-async function act(nodeId, type, extra = {}) {
+function act(nodeId, type, extra = {}) {
   const mapId = state.map.id;
-  try {
-    const result = await api(`/maps/${mapId}/action`, { nodeId, type, expectedRevision: state.map.revision, ...extra });
-    if (state.map.id === mapId) { state.map = result; renderMap(); }
-    await refresh(); return true;
-  } catch (error) { toast(error.message); await refresh(); return false; }
+  const execute = async () => {
+    if (state.map?.id !== mapId) return false;
+    state.mutating = true;
+    try {
+      const result = await api(`/maps/${mapId}/action`, { nodeId, type, expectedRevision: state.map.revision, ...extra });
+      if (state.map?.id === mapId) { state.map = result; renderMap(); }
+      return true;
+    } catch (error) {
+      toast(error.message);
+      // Reload acknowledged coordinates after a conflict instead of displaying an unsaved move.
+      try { const current = await api(`/maps/${mapId}`); if (state.map?.id === mapId) { state.map = current; renderMap(); } } catch { connectionView(true); }
+      return false;
+    } finally { state.mutating = false; }
+  };
+  const result = actionTail.then(execute); actionTail = result.catch(() => {}); return result;
 }
 function showCreate() { $('#create-error').textContent = ''; $('#create-dialog').showModal(); $('#idea').focus(); }
 function showWelcome() {
-  state.map = null; state.selected = null; localStorage.removeItem('grill-my-mind-map');
+  openVersion++; state.map = null; state.selected = null; localStorage.removeItem('grill-my-mind-map'); navigation(false);
   $('#welcome').classList.remove('hidden'); $('#workspace').classList.add('hidden'); $('#map-title').textContent = 'A place to think'; renderRail();
 }
 $('.brand').addEventListener('click', event => { event.preventDefault(); showWelcome(); location.hash = ''; });
@@ -180,19 +194,20 @@ $('#detail').addEventListener('submit', async event => {
   button.disabled = false;
 });
 $('#zoom-in').addEventListener('click', () => zoom(1.2)); $('#zoom-out').addEventListener('click', () => zoom(1 / 1.2)); $('#fit-map').addEventListener('click', fitMap);
-$('#canvas').addEventListener('wheel', event => { event.preventDefault(); const rect = $('#canvas').getBoundingClientRect(); zoom(event.deltaY < 0 ? 1.08 : 1 / 1.08, event.clientX - rect.left, event.clientY - rect.top); }, { passive: false });
+$('#canvas').addEventListener('wheel', event => { event.preventDefault(); if (gesture) return; const rect = $('#canvas').getBoundingClientRect(); zoom(event.deltaY < 0 ? 1.08 : 1 / 1.08, event.clientX - rect.left, event.clientY - rect.top); }, { passive: false });
 $('#canvas').addEventListener('pointerdown', event => {
-  if (event.button !== 0 || event.target.closest('button')) return;
-  const node = event.target.closest('.node'); if (node && !event.target.closest('.node-head')) return;
-  gesture = { pointer: event.pointerId, clientX: event.clientX, clientY: event.clientY, x: state.x, y: state.y, nodeId: node?.dataset.node, position: node ? { ...state.positions[node.dataset.node] } : null, moved: false };
-  $('#canvas').setPointerCapture(event.pointerId); $('#canvas').classList.add('dragging');
+  if (event.button !== 0 || !event.isPrimary || gesture || state.mutating || !state.map) return;
+  const node = event.target.closest('.node');
+  gesture = { pointer: event.pointerId, clientX: event.clientX, clientY: event.clientY, x: state.x, y: state.y, scale: state.scale, nodeId: node?.dataset.node, position: node ? { ...state.positions[node.dataset.node] } : null, moved: false };
+  $('#canvas').setPointerCapture(event.pointerId);
 });
 $('#canvas').addEventListener('pointermove', event => {
   if (!gesture || event.pointerId !== gesture.pointer) return;
   const dx = event.clientX - gesture.clientX, dy = event.clientY - gesture.clientY;
-  if (Math.abs(dx) + Math.abs(dy) > 4) gesture.moved = true;
+  if (!gesture.moved && Math.hypot(dx, dy) < 4) return;
+  gesture.moved = true; $('#canvas').classList.add('dragging');
   if (gesture.nodeId) {
-    const pos = { x: gesture.position.x + dx / state.scale, y: gesture.position.y + dy / state.scale }; state.positions[gesture.nodeId] = pos;
+    const pos = { x: gesture.position.x + dx / gesture.scale, y: gesture.position.y + dy / gesture.scale }; state.positions[gesture.nodeId] = pos;
     const el = document.querySelector(`[data-node="${gesture.nodeId}"]`); el.style.left = `${pos.x}px`; el.style.top = `${pos.y}px`; renderEdges();
   } else { state.x = gesture.x + dx; state.y = gesture.y + dy; transform(); }
 });
@@ -201,9 +216,25 @@ async function finishGesture(event) {
   const finished = gesture; gesture = null; $('#canvas').classList.remove('dragging');
   if ($('#canvas').hasPointerCapture(event.pointerId)) $('#canvas').releasePointerCapture(event.pointerId);
   if (finished.moved) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 100); }
-  if (finished.nodeId && finished.moved) await act(finished.nodeId, 'position', state.positions[finished.nodeId]);
+  if (event.type !== 'pointerup') { renderMap(); return; }
+  if (finished.nodeId) {
+    selectNode(finished.nodeId);
+    if (finished.moved) {
+      $('#saved-state').textContent = 'Saving position…';
+      await act(finished.nodeId, 'position', { ...state.positions[finished.nodeId] });
+    }
+  }
 }
-$('#canvas').addEventListener('pointerup', finishGesture); $('#canvas').addEventListener('pointercancel', finishGesture);
+for (const type of ['pointerup', 'pointercancel', 'lostpointercapture']) $('#canvas').addEventListener(type, finishGesture);
+$('#nodes').addEventListener('keydown', async event => {
+  const node = event.target.closest('.node');
+  if (!node || !event.altKey || !['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) return;
+  event.preventDefault(); if (state.mutating || gesture) return;
+  const id = node.dataset.node, pos = state.positions[id];
+  const x = pos.x + (event.key === 'ArrowLeft' ? -24 : event.key === 'ArrowRight' ? 24 : 0);
+  const y = pos.y + (event.key === 'ArrowUp' ? -24 : event.key === 'ArrowDown' ? 24 : 0);
+  selectNode(id); await act(id, 'position', { x, y }); $(`[data-node="${id}"]`)?.focus();
+});
 window.addEventListener('resize', () => { if (state.map) fitMap(); });
 window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== state.map?.id) openMap(id); else if (!id) showWelcome(); });
 try {

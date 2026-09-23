@@ -6,7 +6,7 @@
   "engines": { "node": ">=20" },
   "scripts": {
     "start": "node skills/grill-my-mind/scripts/server.mjs",
-    "test": "node --test tests/store.test.mjs tests/server.test.mjs tests/cli.test.mjs",
-    "check": "node --check skills/grill-my-mind/scripts/server.mjs && node --check skills/grill-my-mind/scripts/store.mjs && node --check skills/grill-my-mind/scripts/cli.mjs && node --check skills/grill-my-mind/assets/app.js"
+    "test": "node --test tests/store.test.mjs tests/server.test.mjs tests/cli.test.mjs tests/graph.test.mjs",
+    "check": "node --check skills/grill-my-mind/scripts/server.mjs && node --check skills/grill-my-mind/scripts/store.mjs && node --check skills/grill-my-mind/scripts/cli.mjs && node --check skills/grill-my-mind/assets/app.js && node --check skills/grill-my-mind/assets/graph.js"
   }
 }
