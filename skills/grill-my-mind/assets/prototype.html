@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Grill My Mind · Skill tree studies</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/prototype.css"></head>
+<body>
+  <header class="masthead"><a class="wordmark" href="/">✳ <span>GRILL MY MIND</span></a><span class="study-label">INTERACTION STUDY <b>·</b> SIMULATED RESEARCH</span><div class="header-actions"><button id="theme-toggle" aria-pressed="false">Light mode</button><button id="reset">Reset preview</button><a id="exit" href="/">Back to workspace ↗</a></div></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow" id="eyebrow">01 / CONSTELLATION</p><h1 id="map-title">An idea. A world to discover.</h1><p id="description">Follow a thread. See where it leads.</p></div><div class="progress"><strong id="count">0</strong><span>of <b id="total">0</b> ideas explored</span><div class="progress-track"><i id="progress-fill"></i></div></div></section>
+    <section id="canvas" aria-label="Skill tree. Drag nodes to move them, or drag the background to pan. Select a node to see its details. Focus a node and use Alt plus arrow keys to move it."><div id="world"><svg id="connections" aria-hidden="true"></svg><div id="zones" aria-hidden="true"></div><div id="nodes"></div></div><div class="map-hint" id="map-hint">Make room for your thinking.<br><span>Drag a node to move it. Drag the background to pan.</span></div></section>
+    <aside id="inspector" aria-label="Selected idea"></aside>
+    <div class="map-tools"><span class="legend"><span><i class="gray"></i>Unexplored</span><span><i class="gold"></i>Needs you</span><span><i class="mint"></i>Explored</span></span><div class="zoom"><button id="reset-layout" title="Restore node positions in this layout">Reset layout</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="fit" aria-label="Fit tree">Fit</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div>
+  </main>
+  <footer class="prototype-switcher" aria-label="Prototype variants"><button id="previous" aria-label="Previous prototype">←</button><div><span>COMPARE PROTOTYPES</span><strong id="variant-name">01 — Constellation</strong></div><button id="next" aria-label="Next prototype">→</button><span class="switcher-note">← → to switch</span></footer>
+  <div class="simulation-note">Illustrative ideas · changes are not saved</div><div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <script src="/prototype.js" type="module"></script>
+</body></html>

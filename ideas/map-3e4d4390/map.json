@@ -1,0 +1,174 @@
+{
+  "schemaVersion": 1,
+  "id": "map-3e4d4390",
+  "title": "Grill My Mind",
+  "rootId": "node-3f23c237",
+  "revision": 5,
+  "originalIdea": "Grill My Mind is a skill for Codex, Claude Code, and GitHub Copilot. It opens a localhost mind map where I can describe an idea, answer questions, and choose which suggested branches agents explore. Maps should save readable structured knowledge in the repo and resume across sessions. Use the existing agent, keep context focused, and reach an MVP quickly so we can learn from trying it.",
+  "createdAt": "2026-09-23T03:19:28.430Z",
+  "updatedAt": "2026-09-23T03:34:13.554Z",
+  "nodes": [
+    {
+      "id": "node-3f23c237",
+      "title": "Grill My Mind",
+      "prompt": "Grill My Mind is a skill for Codex, Claude Code, and GitHub Copilot. It opens a localhost mind map where I can describe an idea, answer questions, and choose which suggested branches agents explore. Maps should save readable structured knowledge in the repo and resume across sessions. Use the existing agent, keep context focused, and reach an MVP quickly so we can learn from trying it.",
+      "body": "The first trial is ready to explore. The map and question panel save your work locally, and the command bridge lets the agent you are already using pick up a selected branch.\n\n## What we have agreed\n\n- Codex, Claude Code, and GitHub Copilot are the intended environments. This first live trial uses Codex; the other environments still need hands-on checks.\n- Suggested branches wait for your activation. Completing research does not automatically accept its conclusion.\n- Saved JSON owns the map; readable Markdown lets other agents understand it without the original chat.\n- The initial agent mode is intentionally simple and replaceable. Context growth is something to measure in real use.\n\n## What to try\n\nChoose a direction on the map, inspect its details, and activate it when you want to investigate. You can also add a direction of your own. Reopening the workspace preserves the same questions, answers, and suggestions.\n\nThe initial context packet for this real exploration was 1,922 characters. That measures map input only, not the agent's total conversation or actual billed tokens.",
+      "summary": "A living map for thinking with an agent. Questions sharpen the idea; you choose which research directions become active.",
+      "kind": "idea",
+      "parentId": null,
+      "status": "explored",
+      "reviewState": "unreviewed",
+      "contentRevision": 2,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:19:28.430Z"
+    },
+    {
+      "id": "node-dfb92941",
+      "title": "Does the map feel useful?",
+      "prompt": "Try selecting and moving ideas, reading details, and adding a direction. Identify where the canvas helps you think and where it feels awkward. Use feedback from real interaction to choose the next visual improvement.",
+      "body": "Try selecting and moving ideas, reading details, and adding a direction. Identify where the canvas helps you think and where it feels awkward. Use feedback from real interaction to choose the next visual improvement.",
+      "summary": "Try selecting and moving ideas, reading details, and adding a direction. Identify where the canvas helps you think and where it feels awkward. Use feedback from real interaction to choose the next visual improvement.",
+      "kind": "question",
+      "parentId": "node-3f23c237",
+      "status": "queued",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:20:49.489Z"
+    },
+    {
+      "id": "node-5d904151",
+      "title": "Keep the agent focused",
+      "prompt": "Measure map context per investigation, idle-wait overhead, and how much history accumulates through several branches. Consider compacting or delegating only if the trial shows a problem.",
+      "body": "Measure map context per investigation, idle-wait overhead, and how much history accumulates through several branches. Consider compacting or delegating only if the trial shows a problem.",
+      "summary": "Measure map context per investigation, idle-wait overhead, and how much history accumulates through several branches. Consider compacting or delegating only if the trial shows a problem.",
+      "kind": "research",
+      "parentId": "node-3f23c237",
+      "status": "suggested",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:20:49.489Z"
+    },
+    {
+      "id": "node-20f918e5",
+      "title": "Resume with another agent",
+      "prompt": "Test the packaged skill in Claude Code and GitHub Copilot. Verify installation, server lifetime, branch claims, question delivery, and reading the saved map without the original Codex conversation.",
+      "body": "Test the packaged skill in Claude Code and GitHub Copilot. Verify installation, server lifetime, branch claims, question delivery, and reading the saved map without the original Codex conversation.",
+      "summary": "Test the packaged skill in Claude Code and GitHub Copilot. Verify installation, server lifetime, branch claims, question delivery, and reading the saved map without the original Codex conversation.",
+      "kind": "research",
+      "parentId": "node-3f23c237",
+      "status": "suggested",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:20:49.489Z"
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-3f23c237",
+      "to": "node-dfb92941",
+      "type": "contains"
+    },
+    {
+      "from": "node-3f23c237",
+      "to": "node-5d904151",
+      "type": "contains"
+    },
+    {
+      "from": "node-3f23c237",
+      "to": "node-20f918e5",
+      "type": "contains"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job-03367379",
+      "nodeId": "node-3f23c237",
+      "status": "completed",
+      "reason": "User described a new idea. Identify useful directions and ask focused questions.",
+      "createdAt": "2026-09-23T03:19:28.430Z",
+      "worker": "codex-mvp",
+      "claimKey": "a33f9f46-0da7-4582-a248-9ec085828f65",
+      "startedAt": "2026-09-23T03:19:41.460Z",
+      "inputSignature": "612a964574f409f90eb277db17c3942f23fdcadfe7d04b8762bd9f4a31d13998",
+      "contextCharacters": 1922,
+      "finishedAt": "2026-09-23T03:20:49.489Z",
+      "result": {
+        "summary": "A living map for thinking with an agent. Questions sharpen the idea; you choose which research directions become active.",
+        "body": "The first trial is ready to explore. The map and question panel save your work locally, and the command bridge lets the agent you are already using pick up a selected branch.\n\n## What we have agreed\n\n- Codex, Claude Code, and GitHub Copilot are the intended environments. This first live trial uses Codex; the other environments still need hands-on checks.\n- Suggested branches wait for your activation. Completing research does not automatically accept its conclusion.\n- Saved JSON owns the map; readable Markdown lets other agents understand it without the original chat.\n- The initial agent mode is intentionally simple and replaceable. Context growth is something to measure in real use.\n\n## What to try\n\nChoose a direction on the map, inspect its details, and activate it when you want to investigate. You can also add a direction of your own. Reopening the workspace preserves the same questions, answers, and suggestions.\n\nThe initial context packet for this real exploration was 1,922 characters. That measures map input only, not the agent's total conversation or actual billed tokens.",
+        "questions": [],
+        "suggestions": [
+          {
+            "title": "Does the map feel useful?",
+            "body": "Try selecting and moving ideas, reading details, and adding a direction. Identify where the canvas helps you think and where it feels awkward. Use feedback from real interaction to choose the next visual improvement.",
+            "kind": "question"
+          },
+          {
+            "title": "Keep the agent focused",
+            "body": "Measure map context per investigation, idle-wait overhead, and how much history accumulates through several branches. Consider compacting or delegating only if the trial shows a problem.",
+            "kind": "research"
+          },
+          {
+            "title": "Resume with another agent",
+            "body": "Test the packaged skill in Claude Code and GitHub Copilot. Verify installation, server lifetime, branch claims, question delivery, and reading the saved map without the original Codex conversation.",
+            "kind": "research"
+          }
+        ],
+        "sources": [],
+        "links": []
+      },
+      "stale": false
+    },
+    {
+      "id": "job-c2bcd3ac",
+      "nodeId": "node-dfb92941",
+      "status": "queued",
+      "reason": "User activated this branch. Explore only this direction.",
+      "createdAt": "2026-09-23T03:30:12.192Z"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-23T03:19:28.430Z",
+      "type": "activated",
+      "nodeId": "node-3f23c237",
+      "detail": "User described a new idea. Identify useful directions and ask focused questions."
+    },
+    {
+      "at": "2026-09-23T03:19:41.461Z",
+      "type": "started",
+      "nodeId": "node-3f23c237",
+      "detail": "codex-mvp; context packet 1922 characters"
+    },
+    {
+      "at": "2026-09-23T03:20:49.489Z",
+      "type": "result",
+      "nodeId": "node-3f23c237",
+      "detail": "job-03367379"
+    },
+    {
+      "at": "2026-09-23T03:30:12.192Z",
+      "type": "activated",
+      "nodeId": "node-dfb92941",
+      "detail": "User activated this branch. Explore only this direction."
+    }
+  ],
+  "view": {
+    "positions": {
+      "node-20f918e5": {
+        "x": 366,
+        "y": 376
+      }
+    }
+  }
+}

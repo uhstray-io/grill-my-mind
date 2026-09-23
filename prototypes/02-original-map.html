@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Grill My Mind — Original map prototype</title><link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9IiMzMTViZTgiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiPjxwYXRoIGQ9Ik0xMyAxMnYyNG0wLTEyaDEybTAgMFYxMmgxMG0tMTAgMTJ2MTJoMTAiLz48Y2lyY2xlIGN4PSIxMyIgY3k9IjEyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIzNiIgcj0iMiIvPjwvZz48L3N2Zz4K"><style>
+@charset "UTF-8";
+:root{font-family:"Segoe UI",Arial,sans-serif;color:#192b4d;background:#edf2f8;font-synthesis:none;--blue:#315be8;--ink:#192b4d;--muted:#64748a;--line:#dce3ed;--paper:#fff;--teal:#206b60;--orange:#a64f26}
+*{box-sizing:border-box}body{margin:0}button,input,textarea{font:inherit}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:wait;opacity:.65}button{color:inherit}button:focus-visible,a:focus-visible{outline:3px solid #5a81ef;outline-offset:4px}input:focus,textarea:focus{outline:2px solid #5a81ef;outline-offset:1px}button{border:0;background:none}a{color:var(--blue)}.hidden{display:none!important}.app-shell{display:flex;height:100dvh;min-height:580px;overflow:hidden}.rail{width:224px;flex-shrink:0;background:#f8fafd;padding:29px 19px 20px;border-right:1px solid var(--line);display:flex;flex-direction:column}.brand{display:flex;gap:12px;align-items:center;text-decoration:none;color:var(--ink);font-size:22px;font-weight:650;letter-spacing:-.7px;line-height:1.08;margin:0 10px 36px}.brand svg{width:39px;stroke:var(--blue);stroke-width:2;fill:#f8fafd}.primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--blue);color:white;border-radius:9px;font-size:14px;font-weight:600;padding:12px 17px;min-height:43px;box-shadow:0 2px 3px #213f8a12;transition:background .15s}.primary:hover{background:#2549c9}.new-map{width:100%;margin-bottom:33px;font-size:13px}.new-map span{font-size:20px;font-weight:400}.rail-heading{font-size:12px;color:var(--muted);margin:0 12px 12px}.map-link{width:100%;text-align:left;border-radius:8px;display:flex;align-items:flex-start;gap:10px;padding:12px 10px;margin-bottom:5px;font-size:13px;line-height:1.4}.map-link:hover{background:#eef2f8}.map-link.current{background:#e7edfc;color:#244bbf}.map-link .map-icon{font-size:17px;padding-top:2px;color:#7e92b5}.map-link.current .map-icon{color:var(--blue)}.map-link small{display:block;color:var(--muted);font-size:11px;margin-top:4px}.map-link strong{font-weight:550;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.empty-list{font-size:12px;line-height:1.6;color:var(--muted);padding:0 12px}#map-list{overflow-y:auto}.rail-bottom{margin-top:auto;padding:22px 10px 0}.local-badge{font-size:11px;display:flex;align-items:center;gap:7px;color:var(--muted)}.local-badge span{width:6px;height:6px;border-radius:50%;background:#468778}.text-button{font-size:12px;color:var(--muted);padding:10px 0;text-align:left}.text-button:hover{color:var(--blue)}.rail-bottom .text-button{margin-top:8px}.rail-bottom p{font-size:10px;color:#8995a6;margin:7px 0 0;overflow-wrap:anywhere}main{min-width:0;flex:1;display:flex;flex-direction:column}.topbar{height:76px;flex-shrink:0;border-bottom:1px solid var(--line);background:#f8fafd;display:flex;align-items:center;justify-content:space-between;padding:0 30px;gap:16px}.breadcrumb{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:12px;min-width:0}.breadcrumb strong{font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.breadcrumb span{color:#adb9c9}.bridge{display:flex;align-items:center;gap:8px;font-size:11px;background:white;border:1px solid var(--line);padding:8px 11px;border-radius:20px;white-space:nowrap}.bridge i{width:6px;height:6px;border-radius:50%;background:#ba8241}.bridge.connected i{background:#398874}.welcome{flex:1;display:flex;align-items:center;justify-content:center;gap:18px;padding:50px 35px;overflow:auto;background:radial-gradient(circle at 80% 70%,#dce5f570,transparent 45%)}.welcome-copy{z-index:1;max-width:410px;min-width:300px}.welcome-symbol{font-size:42px;color:var(--blue);margin-bottom:22px}.welcome h1{font:normal clamp(40px,4.3vw,65px)/1.08 Georgia,serif;letter-spacing:-2.2px;margin:0 0 24px}.welcome p{color:var(--muted);font-size:15px;line-height:1.8;margin:0 0 30px}.large{min-height:48px;font-size:14px;padding:14px 22px}.example-link{display:block;padding:18px 0;font-size:12px}.welcome-map{width:440px;height:440px;position:relative;flex-shrink:1}.welcome-map svg{position:absolute;inset:0;width:100%;height:100%;fill:#a8b9dc;stroke:#a8b9dc;stroke-width:1.5}.welcome-map svg path{fill:none}.specimen{position:absolute;background:white;border:1px solid #d4deed;box-shadow:0 8px 24px #2e477611;border-radius:12px;padding:19px;width:210px}.specimen span{font-size:10px;color:#648092;display:block;margin-bottom:12px}.specimen strong{font:20px/1.3 Georgia,serif;font-weight:400}.specimen p{font-size:11px;line-height:1.6;margin:12px 0 0}.root-specimen{left:0;top:170px;transform:rotate(-3deg);background:#f8faff}.top-specimen{right:-4px;top:55px;transform:rotate(4deg);border-style:dashed}.bottom-specimen{right:-18px;top:275px;transform:rotate(2deg);border-style:dashed}.specimen-pill{font-size:10px;color:var(--blue);margin-top:17px}.workspace{display:flex;flex:1;min-height:0}.canvas-column{display:flex;flex-direction:column;min-width:0;flex:1;position:relative}.canvas-heading{padding:28px 30px 18px;display:flex;gap:15px;align-items:flex-start;justify-content:space-between}.canvas-heading h1{font:normal 28px/1.2 Georgia,serif;margin:0 0 9px;letter-spacing:-.6px}.canvas-heading p{font-size:12px;color:var(--muted);margin:0;line-height:1.6;max-width:540px}.saved-state{font-size:10px;color:var(--muted);white-space:nowrap;padding-top:7px}.canvas{flex:1;min-height:250px;position:relative;overflow:hidden;background-image:radial-gradient(#b8c6dc 1px,transparent 1px);background-size:22px 22px;touch-action:none;cursor:grab}.canvas.dragging{cursor:grabbing}.world{position:absolute;transform-origin:0 0;width:1px;height:1px;will-change:transform}#edges{position:absolute;left:0;top:0;overflow:visible;width:1px;height:1px;pointer-events:none}.edge{fill:none;stroke:#b0bfd9;stroke-width:2}.edge.semantic{stroke:#889bc0;stroke-dasharray:5 6;stroke-width:1.5}.node{position:absolute;width:268px;min-height:156px;background:white;border:1px solid #d4dfee;border-radius:12px;box-shadow:0 4px 9px #25375607;padding:17px 19px;cursor:default;transition:box-shadow .12s}.node:hover{box-shadow:0 5px 19px #25375615}.node.selected{border-color:var(--blue);box-shadow:0 0 0 3px #315be81c}.node.suggested{border-style:dashed;border-color:#a8bad5;background:#f8fbff}.node.root{border-left:4px solid var(--blue)}.node.accepted{border-left:4px solid var(--teal)}.node-head{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--muted);margin-bottom:12px}.node-glyph{color:var(--blue);font-size:15px;line-height:1}.node.question .node-glyph{color:var(--orange)}.node-head .status-dot{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#adc0d9}.node.running .status-dot,.node.queued .status-dot{background:var(--blue)}.node.awaiting-answer .status-dot{background:var(--orange)}.node.explored .status-dot{background:var(--teal)}.node-title{font:normal 20px/1.2 Georgia,serif;text-align:left;padding:0;display:block;letter-spacing:-.3px}.node-summary{font-size:11px;line-height:1.65;color:#63718a;margin:10px 0 12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.node-footer{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);min-height:24px}.explore-small{color:var(--blue);background:#eaf0ff;border-radius:5px;padding:5px 8px;font-size:10px;font-weight:600}.explore-small:hover{background:#dce7ff}.node-footer .needs-you{color:var(--orange)}.canvas-hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);max-width:380px;min-width:260px;font-size:12px;line-height:1.6;background:#fffefb;border:1px solid #e5dfd5;padding:12px 18px;border-radius:8px;box-shadow:0 3px 12px #25375608;pointer-events:none}.canvas-toolbar{height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px;border-top:1px solid #dce3ed80;background:#f3f6fb}.legend{display:flex;gap:14px;font-size:10px;color:var(--muted)}.legend span{display:flex;align-items:center;gap:6px}.legend i{height:6px;width:6px;border-radius:50%}.suggested-dot{border:1px solid #7c95b7}.question-dot{background:var(--orange)}.explored-dot{background:var(--teal)}.zoom-controls{display:flex;align-items:center;gap:3px;background:white;border:1px solid var(--line);border-radius:7px;padding:3px}.zoom-controls button{width:29px;height:29px;font-size:17px;border-radius:4px}.zoom-controls button:hover{background:#edf2f8}.zoom-controls span{font-size:10px;color:var(--muted);width:33px;text-align:center}.detail{width:340px;flex-shrink:0;background:#fff;border-left:1px solid var(--line);overflow-y:auto;padding:26px 26px 35px}.detail-kind{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);margin-bottom:21px}.kind-tag{display:flex;align-items:center;gap:7px}.kind-tag b{font-weight:400;font-size:19px;color:var(--blue)}.detail h2{font:normal 28px/1.22 Georgia,serif;letter-spacing:-.6px;margin:0 0 15px}.detail-summary{font-size:13px;line-height:1.7;color:#5b6c82;margin-bottom:22px}.status-label{font-size:10px;color:var(--teal);background:#edf6f2;padding:5px 8px;border-radius:5px}.status-label.pending{background:#fff4e9;color:var(--orange)}.detail-actions{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 25px}.secondary{font-size:12px;border:1px solid var(--line);border-radius:7px;padding:10px 13px;background:white}.secondary:hover{background:#f3f6fc}.detail-actions .primary{font-size:12px;padding:10px 13px;min-height:38px}.section-label{font-size:12px;font-weight:600;margin:27px 0 12px}.prose{font-size:12px;line-height:1.8;color:#53647b;overflow-wrap:anywhere}.prose p{margin:0 0 12px;white-space:pre-wrap}.prose h3{font-size:13px;color:var(--ink);margin:20px 0 10px}.prose ul{padding-left:19px;margin:8px 0 15px}.question-box{padding:16px;background:#fff8ef;border:1px solid #f1dfc8;border-radius:9px;margin:16px 0}.question-box .question-label{font-size:10px;color:var(--orange);margin-bottom:9px}.question-box p{font-size:13px;line-height:1.6;margin:0 0 12px;color:#633c24}.question-box textarea{background:white;min-height:90px;font-size:12px}.question-box .primary{font-size:11px;min-height:34px;padding:8px 12px;margin-top:9px}.answer{font-size:12px;padding:13px;background:#f4f7fb;border-radius:7px;margin:12px 0;line-height:1.6}.answer strong{font-size:11px;display:block;color:#65758c;margin-bottom:5px}.evidence-link{display:block;padding:11px 0;border-bottom:1px solid #edf0f5;color:var(--blue);font-size:12px;text-decoration:none}.evidence-link:hover{text-decoration:underline}.evidence-link small{display:block;color:var(--muted);font-size:10px;line-height:1.6;margin-top:5px}.relationship{display:block;text-align:left;font-size:11px;padding:9px 0;color:var(--muted)}.relationship strong{display:block;color:var(--ink);font-weight:500;margin-top:3px}.detail details{border-top:1px solid var(--line);margin-top:25px;padding-top:16px}.detail summary{cursor:pointer;font-size:12px;color:var(--muted)}.detail details label{font-size:11px;margin:14px 0 7px}.detail details .secondary{margin-top:10px}.detail details input,.detail details textarea{font-size:12px}.state-note{font-size:12px;line-height:1.7;padding:13px;background:#f2f5fb;border-radius:7px;color:#53647b}.state-note.warning{background:#fff4e9;color:#75492b}.run-note{font-size:10px;color:var(--muted);line-height:1.6;margin-top:20px}.detail-empty{padding-top:100px;text-align:center;color:var(--muted);font-size:13px;line-height:1.8}.detail-empty span{display:block;font-size:32px;color:#829ac3;margin-bottom:20px}dialog{border:1px solid #d9e2ef;border-radius:17px;padding:34px;width:min(510px,calc(100vw - 32px));box-shadow:0 25px 100px #15294c33;color:var(--ink)}dialog::backdrop{background:#142d5255;backdrop-filter:blur(5px)}dialog h2{font:normal 33px/1.2 Georgia,serif;letter-spacing:-.7px;margin:8px 0 14px}dialog p{font-size:13px;color:var(--muted);line-height:1.7}.dialog-symbol{font-size:31px;color:var(--blue)}.icon-button{font-size:24px;width:31px;height:31px;border-radius:6px;color:var(--muted)}.icon-button:hover{background:#edf2f8}.close-dialog{position:absolute;right:18px;top:16px}label{font-size:12px;display:block;font-weight:600;margin:19px 0 9px}label span{font-weight:400;color:var(--muted)}input,textarea{width:100%;background:#f9fbfe;border:1px solid #ced9e8;border-radius:7px;padding:11px 12px;color:var(--ink);font-size:13px;line-height:1.6}textarea{resize:vertical}input::placeholder,textarea::placeholder{color:#8594a8}.form-note{font-size:11px!important;color:var(--muted);margin:15px 0 23px}.form-error{color:#a63434;font-size:12px;margin-bottom:0}.toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,15px);max-width:min(540px,90vw);background:#192b4d;color:white;padding:13px 20px;border-radius:9px;font-size:12px;line-height:1.5;box-shadow:0 6px 24px #192b4d25;z-index:10;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s}.toast.visible{opacity:1;transform:translate(-50%,0)}
+.node{height:176px;min-height:176px;padding:14px 17px;display:flex;flex-direction:column}.node-head{margin-bottom:9px;font-size:11px}.node-title{font-size:21px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.node-summary{font-size:13px;line-height:1.4;-webkit-line-clamp:1;margin:8px 0 9px;min-height:18px}.node-footer{margin-top:auto;font-size:11px}.explore-small{font-size:11px}
+@media(min-width:1600px){.rail{width:244px;padding-left:25px;padding-right:25px}.detail{width:380px;padding:30px}.canvas-heading{padding:32px 38px 20px}.welcome{gap:65px}.welcome-map{width:480px}}
+@media(max-width:1150px){.rail{width:185px;padding:25px 12px}.brand{font-size:20px;gap:8px}.detail{width:300px;padding:22px 20px}.topbar{padding:0 21px}.canvas-heading{padding:23px 22px 14px}.canvas-heading h1{font-size:25px}.legend{gap:8px}.canvas-toolbar{padding:0 12px}.welcome-map{width:330px}.specimen{width:175px;padding:16px}.welcome{gap:0}.welcome h1{font-size:49px}}
+@media(max-width:900px){.rail{width:160px}.new-map{font-size:11px;padding:11px 6px}.brand{font-size:18px;margin-left:3px}.brand svg{width:30px}.detail{width:280px;padding:20px 16px}.legend{display:none}.canvas-toolbar{justify-content:flex-end}.welcome-map{display:none}.welcome-copy{max-width:500px}.welcome{justify-content:flex-start;padding-left:65px}.canvas-heading h1{font-size:23px}.saved-state{display:none}.breadcrumb{font-size:11px}.bridge{font-size:10px}}
+@media(max-width:700px){.app-shell{height:auto;min-height:100dvh;overflow:visible;display:block}.rail{width:100%;height:auto;padding:13px 17px;flex-direction:row;align-items:center;gap:14px;border-right:0;border-bottom:1px solid var(--line);flex-wrap:wrap}.brand{margin:0;font-size:16px;flex:1;gap:9px}.brand span br{display:none}.brand svg{width:28px}.new-map{width:auto;margin:0;font-size:12px;padding:8px 10px;min-height:36px}.rail-heading,.rail-bottom{display:none}#map-list{display:flex;width:100%;max-height:60px;overflow-x:auto;gap:7px}.map-link{width:auto;min-width:130px;max-width:210px;flex-shrink:0;margin:0;padding:7px;font-size:11px}.map-link small{display:none}.map-link strong{-webkit-line-clamp:1}.empty-list{margin:0;font-size:11px}.topbar{height:52px;padding:0 16px}.breadcrumb{gap:8px}.bridge{max-width:160px;font-size:10px;padding:7px 8px}.workspace{display:block}.canvas-column{height:58dvh;min-height:390px}.canvas-heading{padding:22px 18px 12px}.canvas-heading h1{font-size:25px}.canvas-heading p{font-size:11px}.canvas-toolbar{height:48px;flex-shrink:0;justify-content:space-between}.legend{display:flex;gap:10px;font-size:9px}.detail{width:100%;border-left:0;border-top:1px solid var(--line);overflow:visible;padding:25px 24px}.detail h2{font-size:30px}.welcome{min-height:75dvh;padding:40px 30px}.welcome h1{font-size:53px}.welcome p{font-size:14px}.welcome-copy{min-width:0}.detail-empty{padding:10px}.detail-empty span{display:none}.node{box-shadow:none}dialog{padding:28px 23px}dialog h2{font-size:30px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+</style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail">
+      <a class="brand" href="#" aria-label="Grill My Mind home"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M9 9v22M9 20h12M21 20V9h10M21 20v11h10"/><circle cx="9" cy="9" r="3"/><circle cx="9" cy="31" r="3"/><circle cx="31" cy="9" r="3"/><circle cx="31" cy="31" r="3"/></svg><span>Grill<br>My Mind</span></a>
+      <button id="new-map" class="primary new-map"><span aria-hidden="true">＋</span> New exploration</button>
+      <div class="rail-heading">Your explorations</div>
+      <nav id="map-list" aria-label="Saved explorations"></nav>
+      <div class="rail-bottom"><div class="local-badge"><span></span> Offline prototype · not saved</div><button id="bridge-help" class="text-button">About this prototype <span aria-hidden="true">↗</span></button><p id="workspace-name"></p></div>
+    </aside>
+    <main id="main">
+      <header class="topbar"><div class="breadcrumb">Workspace <span>/</span> <strong id="map-title">A place to think</strong></div><button id="bridge-status" class="bridge"><i></i><span>Checking connection</span></button></header>
+      <section id="welcome" class="welcome">
+        <div class="welcome-copy"><div class="welcome-symbol" aria-hidden="true">✳</div><h1>Give an idea<br>room to grow.</h1><p>Start with a thought. Ask better questions.<br>Choose the paths worth exploring.</p><button id="start-exploration" class="primary large">Explore an idea <span aria-hidden="true">＋</span></button><button id="open-example" class="text-button example-link">Or look around an example</button></div>
+        <div class="welcome-map" aria-hidden="true"><svg viewBox="0 0 520 420"><path d="M170 210 C270 210 220 90 345 90M170 210 C270 210 225 305 345 305"/><circle cx="170" cy="210" r="6"/><circle cx="345" cy="90" r="5"/><circle cx="345" cy="305" r="5"/></svg><div class="specimen root-specimen"><span>Your starting point</span><strong>What if…</strong><p>Every good question opens a door.</p></div><div class="specimen top-specimen"><span>Another possibility</span><strong>What haven't we considered?</strong></div><div class="specimen bottom-specimen"><span>A direction to explore</span><strong>Let's look a little closer.</strong><div class="specimen-pill">You choose the next step</div></div></div>
+      </section>
+      <section id="workspace" class="workspace hidden" aria-label="Mind map workspace">
+        <div class="canvas-column"><div class="canvas-heading"><div><h1 id="canvas-title"></h1><p id="canvas-subtitle"></p></div><span id="saved-state" class="saved-state">Saved</span></div>
+          <div id="canvas" class="canvas" aria-label="Idea map. Drag the background to pan. Use the zoom buttons to zoom."><div id="world" class="world"><svg id="edges" aria-hidden="true"></svg><div id="nodes"></div></div><div id="empty-hint" class="canvas-hint hidden"></div></div>
+          <div class="canvas-toolbar"><div class="legend"><span><i class="suggested-dot"></i> Suggested</span><span><i class="question-dot"></i> Needs you</span><span><i class="explored-dot"></i> Explored</span></div><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">＋</button><button id="fit-map" aria-label="Fit map to canvas" title="Fit map">⛶</button></div></div>
+        </div><aside id="detail" class="detail" aria-label="Selected idea"></aside>
+      </section>
+    </main>
+  </div>
+  <dialog id="create-dialog"><form id="create-form"><button type="button" class="close-dialog icon-button" aria-label="Close">×</button><div class="dialog-symbol" aria-hidden="true">✳</div><h2>What's on your mind?</h2><p>A rough idea is enough. We’ll find the useful questions together.</p><label for="idea">Your starting idea</label><textarea id="idea" name="idea" rows="5" maxlength="16000" placeholder="I want to build… I've been wondering… What if we could…" required></textarea><label for="title">Give it a name <span>(optional)</span></label><input id="title" name="title" maxlength="100" placeholder="A short name for this exploration"><p class="form-note">The preview creates illustrative branches. No agent runs; changes are not saved.</p><button class="primary large" type="submit">Create exploration</button><p class="form-error" id="create-error" role="alert"></p></form></dialog>
+  <dialog id="help-dialog"><button class="close-dialog icon-button" aria-label="Close">×</button><h2>The original map prototype.</h2><p>A self-contained record of the first card-based design. Questions and findings are simulated. No server, account, or model is required.</p><label for="agent-prompt">How to try it</label><textarea id="agent-prompt" rows="5" readonly></textarea><button id="copy-prompt" class="primary" hidden>Copy instructions</button><p class="form-note">All changes last only until you reload this file. The prototype never reads or writes the real workspace.</p></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script>
+(async()=>{
+const $ = selector => document.querySelector(selector);
+const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const state = { token: '', map: null, maps: [], selected: null, bridge: {}, scale: 1, x: 0, y: 0, positions: {}, drafts: {}, refreshing: false };
+const labels = { suggested: 'Suggested', queued: 'Queued', running: 'Exploring', 'awaiting-answer': 'Needs your answer', explored: 'Explored', interrupted: 'Ready to retry' };
+const glyphs = { idea: '✳', research: '◇', question: '?', decision: '✓', risk: '△' };
+let toastTimer, gesture, suppressClick = false;
+function toast(message) { $('#toast').textContent = message; $('#toast').classList.add('visible'); clearTimeout(toastTimer); toastTimer = setTimeout(() => $('#toast').classList.remove('visible'), 6500); }
+
+const previewMaps=new Map();let nextId=1;
+const id=prefix=>prefix+'-'+nextId++;
+const clone=value=>JSON.parse(JSON.stringify(value));
+function previewNode(title,body,kind='research',parentId=null){return {id:id('node'),title,body,prompt:body,summary:body,kind,parentId,status:parentId?'suggested':'explored',reviewState:'unreviewed',questions:[],sources:[],stale:false};}
+function previewMap(title='Grill My Mind',idea='A living map for thinking with an agent. Questions sharpen the idea; you choose which research directions become active.'){
+  const root=previewNode(title,idea,'idea');
+  const children=[
+    previewNode('Does the map feel useful?','Try selecting and moving ideas. Find where the canvas helps you think and where it feels awkward.','question',root.id),
+    previewNode('Keep the agent focused','Explore one direction at a time, keeping the relevant context small.','research',root.id),
+    previewNode('Resume with another agent','Understand how a saved map could preserve decisions and unanswered questions.','research',root.id)
+  ];
+  const map={id:id('map'),title,rootId:root.id,originalIdea:idea,demo:true,revision:1,nodes:[root,...children],edges:children.map(n=>({from:root.id,to:n.id,type:'contains'})),jobs:[],view:{positions:{}}};
+  previewMaps.set(map.id,map);return map;
+}
+const example=previewMap();
+function publish(map){map.revision++;if(state.map?.id===map.id){state.map=clone(map);renderMap();}refresh();}
+function simulate(map,node,afterAnswer=false){
+  node.status='running';const job={id:id('job'),nodeId:node.id,status:'running'};map.jobs.push(job);
+  setTimeout(()=>{
+    if(job.status!=='running')return;
+    job.status='completed';
+    if(!afterAnswer){node.status='awaiting-answer';node.questions.push({id:id('question'),text:'What would a useful outcome from this branch look like for you?',answer:''});}
+    else{
+      node.status='explored';node.summary='Illustrative finding: start with the smallest useful experiment.';
+      node.body='Simulated finding — no agent ran.\n\nUse your answer to define a small experiment, then evaluate what you learn before expanding the scope. The new direction below remains a suggestion until you activate it.';
+      const child=previewNode('Test the smallest useful step','Choose one observable outcome and decide how to evaluate it.','research',node.id);map.nodes.push(child);map.edges.push({from:node.id,to:child.id,type:'contains'});
+    }
+    publish(map);
+  },800);
+}
+async function api(route,body){
+  if(route==='/maps'&&!body)return {maps:[...previewMaps.values()].map(m=>({id:m.id,title:m.title,demo:true,count:m.nodes.length,revision:m.revision,pending:0})),bridge:{listening:true}};
+  if(route==='/maps'&&body)return clone(previewMap(body.title,body.idea));
+  if(route==='/demo')return clone(example);
+  const match=route.match(/^\/maps\/([^/]+)(\/action)?$/),map=match&&previewMaps.get(match[1]);
+  if(!map)throw new Error('This sample map is unavailable. Reload to restore the prototype.');
+  if(!body)return clone(map);
+  const node=map.nodes.find(n=>n.id===body.nodeId);if(!node)throw new Error('Select an idea first.');
+  switch(body.type){
+    case 'position':map.view.positions[node.id]={x:body.x,y:body.y};break;
+    case 'activate':if(!['running','awaiting-answer'].includes(node.status))simulate(map,node);break;
+    case 'cancel':for(const job of map.jobs.filter(j=>j.nodeId===node.id&&j.status==='running'))job.status='cancelled';node.status='interrupted';break;
+    case 'answer':{const question=node.questions.find(q=>q.id===body.questionId);if(!body.answer.trim())throw new Error('Add a short answer first.');question.answer=body.answer;simulate(map,node,true);break;}
+    case 'accept':node.reviewState='accepted';break;
+    case 'suggest':{const child=previewNode(body.title,body.body,'research',node.id);map.nodes.push(child);map.edges.push({from:node.id,to:child.id,type:'contains'});break;}
+    case 'revise':{node.prompt=body.body;node.body=body.body;node.summary=body.body;node.reviewState='unreviewed';const descendants=[node.id];for(let i=0;i<descendants.length;i++){for(const child of map.nodes.filter(n=>n.parentId===descendants[i])){child.stale=true;descendants.push(child.id);}}break;}
+    default:throw new Error('This action is not part of the prototype.');
+  }
+  map.revision++;return clone(map);
+}
+
+function prose(value) {
+  return String(value || '').split(/\n\s*\n/).map(block => {
+    if (/^#{1,4} /.test(block)) return `<h3>${esc(block.replace(/^#{1,4} /, ''))}</h3>`;
+    if (/^[-*] /.test(block)) return `<ul>${block.split('\n').map(line => `<li>${esc(line.replace(/^[-*] /, ''))}</li>`).join('')}</ul>`;
+    return `<p>${esc(block)}</p>`;
+  }).join('');
+}
+function connectionView(offline = false) {
+  const connected = state.bridge.listening && !offline;
+  $('#bridge-status').classList.toggle('connected', connected);
+  $('#bridge-status span').textContent = 'Prototype · simulated research';
+  const hint = $('#empty-hint');
+  hint.classList.toggle('hidden', !state.map || connected || !state.map.jobs.some(j => j.status === 'queued'));
+  hint.textContent = 'Your branch is queued. Connect your agent to continue exploring.';
+}
+function renderRail() {
+  const html = state.maps.length ? state.maps.map(m => `<button class="map-link ${state.map?.id === m.id ? 'current' : ''}" data-map="${m.id}" ${state.map?.id === m.id ? 'aria-current="page"' : ''}><span class="map-icon" aria-hidden="true">⌘</span><span><strong>${esc(m.title)}</strong><small>${m.demo ? 'Example map' : `${m.count} ${m.count === 1 ? 'idea' : 'ideas'}`}${m.pending ? ` · ${m.pending} queued` : ''}</small></span></button>`).join('') : '<p class="empty-list">Your ideas will find a home here.</p>';
+  if ($('#map-list').innerHTML !== html) $('#map-list').innerHTML = html;
+}
+async function refresh() {
+  if (state.refreshing || document.hidden) return;
+  state.refreshing = true;
+  try {
+    const data = await api('/maps'); state.maps = data.maps; state.bridge = data.bridge; renderRail(); connectionView();
+    if (state.map && data.maps.find(m => m.id === state.map.id)?.revision !== state.map.revision) {
+      state.map = await api(`/maps/${state.map.id}`); renderMap();
+    }
+  } catch { connectionView(true); }
+  finally { state.refreshing = false; }
+}
+async function openMap(id) {
+  try {
+    state.map = await api(`/maps/${id}`); state.selected = state.map.rootId;
+    location.hash = id;
+    renderMap(true); renderRail();
+  } catch (error) { toast(error.message); }
+}
+function layout() {
+  const m = state.map; const positions = {}; let leaf = 0;
+  function visit(node, depth) {
+    const children = m.nodes.filter(n => n.parentId === node.id);
+    let y;
+    if (!children.length) y = leaf++ * 190;
+    else { const ys = children.map(n => visit(n, depth + 1)); y = (ys[0] + ys.at(-1)) / 2; }
+    positions[node.id] = { x: depth * 365, y }; return y;
+  }
+  visit(m.nodes.find(n => n.id === m.rootId), 0);
+  for (const n of m.nodes) positions[n.id] = m.view.positions[n.id] || positions[n.id] || { x: 0, y: 0 };
+  state.positions = positions;
+}
+function renderEdges() {
+  $('#edges').innerHTML = state.map.edges.map(e => {
+    const a = state.positions[e.from], b = state.positions[e.to]; if (!a || !b) return '';
+    const start = { x: a.x + 268, y: a.y + 83 }, end = { x: b.x, y: b.y + 83 };
+    const middle = (start.x + end.x) / 2;
+    return `<path class="edge ${e.type === 'contains' ? '' : 'semantic'}" d="M ${start.x} ${start.y} C ${middle} ${start.y}, ${middle} ${end.y}, ${end.x} ${end.y}"/>`;
+  }).join('');
+}
+function renderMap(fit = false) {
+  if (!state.map) return;
+  const topologyChanged = state.layoutMap !== state.map.id || state.layoutCount !== state.map.nodes.length;
+  state.layoutMap = state.map.id; state.layoutCount = state.map.nodes.length;
+  $('#welcome').classList.add('hidden'); $('#workspace').classList.remove('hidden');
+  $('#map-title').textContent = state.map.title; $('#canvas-title').textContent = state.map.title;
+  $('#canvas-subtitle').textContent = state.map.demo ? 'An example to look around. Its starting content is illustrative.' : 'Follow your curiosity. Choose a branch to take it further.';
+  $('#saved-state').textContent = 'Preview only';
+  layout();
+  $('#nodes').innerHTML = state.map.nodes.map(n => {
+    const pos = state.positions[n.id];
+    const active = ['suggested', 'interrupted'].includes(n.status);
+    return `<article class="node ${n.kind} ${n.status} ${n.id === state.map.rootId ? 'root' : ''} ${n.reviewState === 'accepted' ? 'accepted' : ''} ${n.id === state.selected ? 'selected' : ''}" data-node="${n.id}" style="left:${pos.x}px;top:${pos.y}px" aria-label="${esc(n.title)}, ${labels[n.status]}"><div class="node-head" title="Drag to move this idea"><span class="node-glyph" aria-hidden="true">${glyphs[n.kind]}</span><span>${n.kind === 'idea' ? 'Starting idea' : n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><i class="status-dot"></i></div><button class="node-title" data-select="${n.id}">${esc(n.title)}</button><p class="node-summary">${esc(n.summary)}</p><div class="node-footer"><span class="${n.status === 'awaiting-answer' ? 'needs-you' : ''}">${n.stale ? 'Needs review' : n.reviewState === 'accepted' ? 'Accepted' : labels[n.status]}</span>${active ? `<button class="explore-small" data-explore="${n.id}">${n.status === 'interrupted' ? 'Retry' : 'Explore'} <span aria-hidden="true">＋</span></button>` : n.status === 'awaiting-answer' ? `<button class="explore-small" data-select="${n.id}">Answer</button>` : ''}</div></article>`;
+  }).join('');
+  renderEdges();
+  if (!$('#detail').contains(document.activeElement) || !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) renderDetail();
+  connectionView(); if (fit || topologyChanged) requestAnimationFrame(fitMap); else transform();
+}
+function transform() { $('#world').style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`; $('#zoom-value').textContent = `${Math.round(state.scale * 100)}%`; }
+function fitMap() {
+  if (!state.map) return;
+  const p = Object.values(state.positions); const minX = Math.min(...p.map(p => p.x)), minY = Math.min(...p.map(p => p.y));
+  const width = Math.max(...p.map(p => p.x)) + 268 - minX, height = Math.max(...p.map(p => p.y)) + 176 - minY;
+  const canvas = $('#canvas'); state.scale = Math.max(.25, Math.min(1, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 40) / height));
+  state.x = (canvas.clientWidth - width * state.scale) / 2 - minX * state.scale;
+  state.y = (canvas.clientHeight - height * state.scale) / 2 - minY * state.scale;
+  transform();
+}
+function zoom(factor, cx = $('#canvas').clientWidth / 2, cy = $('#canvas').clientHeight / 2) {
+  const next = Math.max(.2, Math.min(1.8, state.scale * factor)); const ratio = next / state.scale;
+  state.x = cx - (cx - state.x) * ratio; state.y = cy - (cy - state.y) * ratio; state.scale = next; transform();
+}
+function selectNode(nodeId) {
+  state.selected = nodeId;
+  for (const card of document.querySelectorAll('.node')) card.classList.toggle('selected', card.dataset.node === nodeId);
+  renderDetail();
+}
+function renderDetail() {
+  const n = state.map.nodes.find(n => n.id === state.selected);
+  if (!n) { $('#detail').innerHTML = '<div class="detail-empty"><span>◇</span>Select an idea to look closer.</div>'; return; }
+  const pending = ['suggested', 'queued', 'running', 'awaiting-answer', 'interrupted'].includes(n.status);
+  const job = state.map.jobs.filter(j => j.nodeId === n.id).at(-1);
+  const related = state.map.edges.filter(e => e.type !== 'contains' && (e.from === n.id || e.to === n.id));
+  const questionHtml = n.questions.map(q => q.answer ? `<div class="answer"><strong>${esc(q.text)}</strong>${esc(q.answer)}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] || '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
+  $('#detail').innerHTML = `<div class="detail-kind"><span class="kind-tag"><b aria-hidden="true">${glyphs[n.kind]}</b>${n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><span class="status-label ${pending ? 'pending' : ''}">${n.reviewState === 'accepted' ? 'Accepted' : labels[n.status]}</span></div><h2>${esc(n.title)}</h2><p class="detail-summary">${esc(n.summary)}</p>
+    ${n.stale ? '<p class="state-note warning">An earlier premise changed. These findings need another look before you rely on them.</p>' : ''}
+    ${n.status === 'suggested' ? '<p class="state-note">A possible direction. Nothing runs until you choose to explore it.</p>' : ''}
+    ${n.status === 'queued' ? `<p class="state-note">${state.bridge.listening ? 'Your agent will pick up this branch next.' : 'Saved in the queue. Connect your agent to start this investigation.'}</p>` : ''}
+    ${n.status === 'running' ? '<p class="state-note">Simulating exploration. No agent is running; an example question will appear shortly.</p>' : ''}
+    ${job?.error ? `<p class="state-note warning">${esc(job.error)}</p>` : ''}
+    <div class="detail-actions">${['suggested', 'interrupted', 'explored'].includes(n.status) ? `<button class="primary" data-explore="${n.id}">${n.status === 'suggested' ? 'Explore this branch' : n.status === 'interrupted' ? 'Retry exploration' : 'Explore further'}</button>` : ''}${['queued', 'running'].includes(n.status) ? `<button class="secondary" data-cancel="${n.id}">Stop exploration</button>` : ''}${n.status === 'explored' && n.reviewState !== 'accepted' && !n.stale ? `<button class="secondary" data-accept="${n.id}">Accept finding</button>` : ''}</div>
+    ${questionHtml}
+    ${n.body && n.body !== n.summary ? `<h3 class="section-label">${n.status === 'suggested' ? 'What to explore' : 'Notes & findings'}</h3><div class="prose">${prose(n.body)}</div>` : ''}
+    ${job?.stale && job.result ? `<h3 class="section-label">Result from the earlier premise</h3><div class="prose">${prose(job.result.body)}</div>` : ''}
+    ${n.sources.length ? `<h3 class="section-label">Sources & evidence</h3>${n.sources.map(s => `<a class="evidence-link" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} <span aria-hidden="true">↗</span><small>${esc(s.note)}</small></a>`).join('')}` : ''}
+    ${related.length ? `<h3 class="section-label">Connected thinking</h3>${related.map(e => { const target = state.map.nodes.find(node => node.id === (e.from === n.id ? e.to : e.from)); return `<button class="relationship" data-select="${target.id}">${esc(e.type.replaceAll('_', ' '))}<strong>${esc(target.title)}</strong></button>`; }).join('')}` : ''}
+    <details><summary>Add a direction</summary><form id="suggest-form" data-node-id="${n.id}"><label for="branch-title">What's worth exploring?</label><input id="branch-title" name="title" maxlength="100" data-draft="${n.id}-title" value="${esc(state.drafts[`${n.id}-title`] || '')}" required><label for="branch-body">A little context</label><textarea id="branch-body" name="body" rows="3" maxlength="4000" data-draft="${n.id}-branch">${esc(state.drafts[`${n.id}-branch`] || '')}</textarea><button type="submit" class="secondary">Add suggested branch</button></form></details>
+    <details><summary>Revise this premise</summary><form id="revise-form" data-node-id="${n.id}"><label for="revised-body">What changed?</label><textarea id="revised-body" name="body" rows="5" maxlength="16000" required data-draft="${n.id}-revision">${esc(state.drafts[`${n.id}-revision`] || n.prompt || n.body)}</textarea><p class="form-note">Dependent findings will be marked for review. Research won't restart automatically.</p><button type="submit" class="secondary">Save revised premise</button></form></details>
+    ${job?.contextCharacters ? `<p class="run-note">Last investigation used ${job.contextCharacters.toLocaleString()} characters of map context. Only relevant context is sent.</p>` : ''}`;
+}
+async function act(nodeId, type, extra = {}) {
+  const mapId = state.map.id;
+  try {
+    const result = await api(`/maps/${mapId}/action`, { nodeId, type, expectedRevision: state.map.revision, ...extra });
+    if (state.map.id === mapId) { state.map = result; renderMap(); }
+    await refresh(); return true;
+  } catch (error) { toast(error.message); await refresh(); return false; }
+}
+function showCreate() { $('#create-error').textContent = ''; $('#create-dialog').showModal(); $('#idea').focus(); }
+function showWelcome() {
+  state.map = null; state.selected = null; 
+  $('#welcome').classList.remove('hidden'); $('#workspace').classList.add('hidden'); $('#map-title').textContent = 'A place to think'; renderRail();
+}
+$('.brand').addEventListener('click', event => { event.preventDefault(); showWelcome(); location.hash = ''; });
+$('#new-map').addEventListener('click', showCreate); $('#start-exploration').addEventListener('click', showCreate);
+for (const button of document.querySelectorAll('.close-dialog')) button.addEventListener('click', () => button.closest('dialog').close());
+function showHelp() { $('#help-dialog').showModal(); }
+$('#bridge-help').addEventListener('click', showHelp); $('#bridge-status').addEventListener('click', showHelp);
+$('#copy-prompt').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#agent-prompt').value); toast('Prompt copied. Paste it into your coding agent.'); } catch { $('#agent-prompt').select(); toast('Select and copy the prompt above.'); } });
+$('#create-form').addEventListener('submit', async event => {
+  event.preventDefault(); const button = event.submitter; button.disabled = true;
+  const data = new FormData(event.target); const idea = data.get('idea').trim(); const title = data.get('title').trim() || idea.split(/\s+/).slice(0, 7).join(' ').slice(0, 100);
+  try { const map = await api('/maps', { title, idea }); $('#create-dialog').close(); event.target.reset(); await refresh(); await openMap(map.id); toast('Preview created with illustrative branches. Nothing is saved to disk.'); }
+  catch (error) { $('#create-error').textContent = error.message; }
+  finally { button.disabled = false; }
+});
+$('#open-example').addEventListener('click', async event => {
+  event.target.disabled = true;
+  try { const existing = state.maps.find(m => m.demo); const map = existing || await api('/demo', {}); await refresh(); await openMap(map.id); }
+  catch (error) { toast(error.message); } finally { event.target.disabled = false; }
+});
+document.addEventListener('click', async event => {
+  if (suppressClick) { suppressClick = false; return; }
+  const map = event.target.closest('[data-map]'); if (map) return openMap(map.dataset.map);
+  const select = event.target.closest('[data-select]'); if (select) return selectNode(select.dataset.select);
+  for (const [attribute, action, message] of [['explore', 'activate', 'Simulated exploration started.'], ['cancel', 'cancel', 'Simulated exploration stopped.'], ['accept', 'accept', 'Finding accepted.']]) {
+    const button = event.target.closest(`[data-${attribute}]`);
+    if (button) { button.disabled = true; if (await act(button.dataset[attribute], action)) toast(message); button.disabled = false; return; }
+  }
+  const card = event.target.closest('.node'); if (card) selectNode(card.dataset.node);
+});
+$('#detail').addEventListener('input', event => { if (event.target.dataset.draft) state.drafts[event.target.dataset.draft] = event.target.value; });
+$('#detail').addEventListener('submit', async event => {
+  event.preventDefault(); const form = event.target; const button = event.submitter; button.disabled = true;
+  const data = Object.fromEntries(new FormData(form)); const node = form.dataset.nodeId;
+  let success = false;
+  if (form.dataset.question) success = await act(node, 'answer', { questionId: form.dataset.question, answer: data.answer });
+  if (form.id === 'suggest-form') success = await act(node, 'suggest', { title: data.title, body: data.body.trim() || data.title });
+  if (form.id === 'revise-form') success = await act(node, 'revise', data);
+  if (success) { for (const field of form.querySelectorAll('[data-draft]')) delete state.drafts[field.dataset.draft]; renderDetail(); toast(form.dataset.question ? 'Answer recorded for this preview. Simulated research will continue.' : 'Updated in this preview only.'); }
+  button.disabled = false;
+});
+$('#zoom-in').addEventListener('click', () => zoom(1.2)); $('#zoom-out').addEventListener('click', () => zoom(1 / 1.2)); $('#fit-map').addEventListener('click', fitMap);
+$('#canvas').addEventListener('wheel', event => { event.preventDefault(); const rect = $('#canvas').getBoundingClientRect(); zoom(event.deltaY < 0 ? 1.08 : 1 / 1.08, event.clientX - rect.left, event.clientY - rect.top); }, { passive: false });
+$('#canvas').addEventListener('pointerdown', event => {
+  if (event.button !== 0 || event.target.closest('button')) return;
+  const node = event.target.closest('.node'); if (node && !event.target.closest('.node-head')) return;
+  gesture = { pointer: event.pointerId, clientX: event.clientX, clientY: event.clientY, x: state.x, y: state.y, nodeId: node?.dataset.node, position: node ? { ...state.positions[node.dataset.node] } : null, moved: false };
+  $('#canvas').setPointerCapture(event.pointerId); $('#canvas').classList.add('dragging');
+});
+$('#canvas').addEventListener('pointermove', event => {
+  if (!gesture || event.pointerId !== gesture.pointer) return;
+  const dx = event.clientX - gesture.clientX, dy = event.clientY - gesture.clientY;
+  if (Math.abs(dx) + Math.abs(dy) > 4) gesture.moved = true;
+  if (gesture.nodeId) {
+    const pos = { x: gesture.position.x + dx / state.scale, y: gesture.position.y + dy / state.scale }; state.positions[gesture.nodeId] = pos;
+    const el = document.querySelector(`[data-node="${gesture.nodeId}"]`); el.style.left = `${pos.x}px`; el.style.top = `${pos.y}px`; renderEdges();
+  } else { state.x = gesture.x + dx; state.y = gesture.y + dy; transform(); }
+});
+async function finishGesture(event) {
+  if (!gesture || event.pointerId !== gesture.pointer) return;
+  const finished = gesture; gesture = null; $('#canvas').classList.remove('dragging');
+  if ($('#canvas').hasPointerCapture(event.pointerId)) $('#canvas').releasePointerCapture(event.pointerId);
+  if (finished.moved) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 100); }
+  if (finished.nodeId && finished.moved) await act(finished.nodeId, 'position', state.positions[finished.nodeId]);
+}
+$('#canvas').addEventListener('pointerup', finishGesture); $('#canvas').addEventListener('pointercancel', finishGesture);
+window.addEventListener('resize', () => { if (state.map) fitMap(); });
+window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== state.map?.id) openMap(id); else if (!id) showWelcome(); });
+$('#workspace-name').textContent='Standalone snapshot · reload to reset';
+$('#agent-prompt').value='This saved prototype runs entirely in your browser. Select a card, explore a branch, answer the sample question, or drag a card by its header. Changes stay in memory and disappear on reload.';
+await refresh();await openMap(example.id);
+
+})();
+</script>
+</body></html>

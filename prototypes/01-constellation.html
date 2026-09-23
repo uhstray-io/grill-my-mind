@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Grill My Mind — Constellation prototype</title><link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9IiMzMTViZTgiLz48ZyBmaWxsPSJub25lIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjMiPjxwYXRoIGQ9Ik0xMyAxMnYyNG0wLTEyaDEybTAgMFYxMmgxMG0tMTAgMTJ2MTJoMTAiLz48Y2lyY2xlIGN4PSIxMyIgY3k9IjEyIiByPSIyIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIzNiIgcj0iMiIvPjwvZz48L3N2Zz4K"><style>
+:root{color-scheme:dark;--ink:#09121c;--slate:#627080;--paper:#e8e9df;--mint:#87dac3;--gold:#edc784;--blue:#95b9ed;font-family:'Segoe UI',sans-serif;color:var(--paper);background:var(--ink)}
+*{box-sizing:border-box}body{margin:0;height:100dvh;overflow:hidden;background:radial-gradient(ellipse at 40% 65%,#142c383d,transparent 65%),var(--ink)}button,a,input,textarea{-webkit-tap-highlight-color:transparent}button,a{color:inherit}button{font:inherit;cursor:pointer;background:none;border:1px solid #62708045;border-radius:5px;padding:9px 13px}button:hover,a:hover{color:white;border-color:var(--mint)}button:focus-visible,a:focus-visible,textarea:focus-visible{outline:2px solid var(--gold);outline-offset:5px}a{text-decoration:none}button:disabled{cursor:wait;opacity:.65}.masthead{height:65px;display:flex;align-items:center;gap:30px;padding:0 32px;border-bottom:1px solid #62708030}.wordmark{display:flex;gap:10px;align-items:center;font-size:29px;color:var(--mint)}.wordmark span{font-size:11px;letter-spacing:2px;font-weight:650}.study-label{font:10px Consolas,monospace;letter-spacing:1px;color:#99a5af}.study-label b{color:var(--gold);margin:0 8px}.header-actions{margin-left:auto;display:flex;align-items:center;gap:24px;font-size:11px}.header-actions button{border:0;color:#aab6c0}.intro{position:absolute;top:94px;left:38px;right:390px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}.eyebrow{font:10px Consolas,monospace;letter-spacing:2px;color:var(--mint);margin:0 0 12px}h1{font:normal 32px Georgia,serif;letter-spacing:-.7px;margin:0}#description{font-size:12px;color:#97a6b5;margin:10px 0 0}.progress{text-align:right;min-width:100px;margin-left:25px}.progress strong{font:32px Georgia,serif;color:var(--mint);display:block}.progress span{font-size:10px;color:#99a5af}.progress span b{font-weight:400}.progress-track{margin-top:10px;height:2px;background:#62708030}.progress-track i{height:2px;display:block;background:var(--mint);transition:width .4s}#canvas{position:absolute;inset:205px 370px 117px 18px;overflow:hidden;cursor:grab;touch-action:none;background-image:radial-gradient(#95b9ed33 .7px,transparent .8px),radial-gradient(#95b9ed1a .7px,transparent .9px);background-size:59px 67px,31px 41px;background-position:15px 10px,3px 33px;mask-image:linear-gradient(transparent,#000 5%,#000 96%,transparent)}#canvas.dragging{cursor:grabbing}#world{position:absolute;width:1400px;height:1000px;transform-origin:0 0}#connections{position:absolute;width:1400px;height:1000px;overflow:visible}#connections path{fill:none;stroke:#62708057;stroke-width:1.3}#connections path.lit{stroke:var(--accent);opacity:.62;stroke-width:1.8;filter:drop-shadow(0 0 4px var(--accent))}.node{position:absolute;width:32px;height:32px;border:1px solid #627080a0;border-radius:50%;padding:7px;background:var(--ink);color:#83909d;transform:translate(-50%,-50%);transition:color .25s,background .25s,box-shadow .25s,border .25s;z-index:2}.node svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;display:block}.node.major{width:44px;height:44px;padding:10px;border-width:1.5px}.node.root{width:65px;height:65px;padding:17px;border:1px solid var(--mint);box-shadow:0 0 0 8px #87dac308,0 0 50px #87dac317}.node.explored{color:var(--accent);border-color:var(--accent);background:color-mix(in srgb,var(--accent) 13%,var(--ink));box-shadow:0 0 17px color-mix(in srgb,var(--accent) 20%,transparent)}.node.researching,.node.question{color:var(--gold);border-color:var(--gold);box-shadow:0 0 18px #edc78430}.node.researching{animation:breathe 1.4s infinite}.node.question:after{content:'?';position:absolute;right:-5px;top:-7px;color:var(--ink);background:var(--gold);width:15px;height:15px;font:bold 11px 'Segoe UI';border-radius:50%}.node.selected{outline:1px solid var(--paper);outline-offset:7px;z-index:4}.node:hover{color:var(--paper);border-color:var(--paper);z-index:5}.node .tooltip{position:absolute;white-space:nowrap;left:50%;bottom:calc(100% + 16px);transform:translateX(-50%);padding:7px 11px;border:1px solid #62708070;background:#09121cf5;font:12px 'Segoe UI',sans-serif;color:var(--paper);opacity:0;pointer-events:none;border-radius:3px}.node:hover .tooltip,.node:focus-visible .tooltip{opacity:1}.node .node-label{position:absolute;top:calc(100% + 14px);left:50%;transform:translateX(-50%);width:165px;font:12px Georgia,serif;color:#adb7bd;letter-spacing:.2px;pointer-events:none}.node.root .node-label{color:var(--mint);font-size:16px}.zone{position:absolute;color:#83909d;font:11px Consolas,monospace;letter-spacing:2px;text-transform:uppercase;transform:translateX(-50%);text-align:center;white-space:nowrap}.zone span{display:block;color:#627080;font:10px 'Segoe UI',sans-serif;letter-spacing:0;margin-top:10px}.map-hint{position:absolute;bottom:12px;left:20px;font:13px Georgia,serif;color:#aab6c0;line-height:1.9;pointer-events:none}.map-hint span{font:11px 'Segoe UI',sans-serif;color:#83909d}#inspector{position:absolute;right:28px;top:99px;bottom:108px;width:320px;padding:26px;border:1px solid #62708040;border-top:2px solid var(--mint);background:linear-gradient(145deg,#14212dde,#0c1722f5);overflow:auto;scrollbar-width:thin;box-shadow:0 12px 50px #0002}.detail-top{display:flex;justify-content:space-between;gap:10px;align-items:center;font:10px Consolas,monospace;letter-spacing:1.4px;color:#97a6b5}.status{display:flex;align-items:center;gap:6px;letter-spacing:0;text-transform:none}.status:before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}.status.explored{color:var(--mint)}.status.question,.status.researching{color:var(--gold)}.detail-symbol{margin:28px 0 25px;width:46px;height:46px;border:1px solid #62708070;display:grid;place-items:center;transform:rotate(45deg);color:var(--accent)}.detail-symbol svg{width:25px;height:25px;transform:rotate(-45deg);fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}h2{font:normal 29px/1.15 Georgia,serif;letter-spacing:-.4px;margin:0 0 15px}.detail-copy{font-size:12px;line-height:1.8;color:#aab6c0}.detail-section{margin-top:25px;padding-top:18px;border-top:1px solid #62708035}.small-label{font:9px Consolas,monospace;letter-spacing:1.5px;color:var(--mint);text-transform:uppercase}.detail-section p{font-size:12px;line-height:1.7;color:#bac4cb;margin-bottom:0}.primary{display:block;width:100%;margin-top:24px;border-color:var(--mint);background:var(--mint);color:var(--ink);font-size:12px;font-weight:650;padding:12px 15px}.primary:hover{background:#b0efdf;color:var(--ink)}.subnote{font-size:10px!important;line-height:1.7;color:#83909d!important}.detail-form label{display:block;font:18px/1.4 Georgia,serif;margin:13px 0;color:var(--paper)}textarea{display:block;width:100%;resize:vertical;min-height:78px;max-height:190px;padding:12px;background:#09121c80;color:var(--paper);border:1px solid #62708070;border-radius:4px;font:12px/1.6 'Segoe UI',sans-serif}.answer{border-left:2px solid var(--gold);padding-left:12px;overflow-wrap:anywhere}.branch-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.branch-links button{font-size:10px;text-align:left;color:#bac4cb}.map-tools{position:absolute;left:38px;right:388px;bottom:85px;display:flex;align-items:center;justify-content:space-between;gap:15px}.legend{display:flex;gap:19px;color:#99a5af;font-size:10px}.legend>span{display:flex;align-items:center;gap:7px}.legend i{height:7px;width:7px;border:1px solid;border-radius:50%}.gray{color:var(--slate)}.gold{color:var(--gold)}.mint{color:var(--mint);background:var(--mint);box-shadow:0 0 7px #87dac350}.zoom{display:flex;background:var(--ink)}.zoom button{border-radius:0;border-color:#62708040;font-size:12px;padding:6px 11px}.prototype-switcher{position:absolute;bottom:17px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:18px;background:#182632;border:1px solid #62708060;border-radius:8px;padding:8px 10px;box-shadow:0 8px 30px #0004;z-index:10}.prototype-switcher button{border:0;font-size:20px;padding:5px 10px}.prototype-switcher div{min-width:160px;text-align:center}.prototype-switcher div>span{display:block;font:8px Consolas,monospace;letter-spacing:1.5px;color:#aab6c0}.prototype-switcher strong{display:block;font-weight:500;font-size:12px;margin-top:4px}.switcher-note{border-left:1px solid #62708050;padding:8px 6px 8px 17px;font-size:10px;color:#aab6c0}.simulation-note{position:absolute;bottom:36px;left:32px;font-size:9px;color:#83909d}.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+body.paths{background:var(--ink)}.paths .intro{right:38px;top:88px}.paths #canvas{inset:192px 32px 325px;background-image:linear-gradient(90deg,#6270800c 1px,transparent 1px);background-size:16.666% 100%;mask-image:none}.paths #world{height:810px}.paths .node{border-radius:4px;transform:translate(-50%,-50%) rotate(45deg)}.paths .node svg,.paths .node .tooltip{transform:rotate(-45deg)}.paths .node .tooltip{left:30px;bottom:38px;transform:rotate(-45deg);transform-origin:left bottom}.paths .node .node-label{left:55px;top:-5px;text-align:left;transform:rotate(-45deg);transform-origin:left top;width:150px;font-family:'Segoe UI',sans-serif;font-size:11px;line-height:1.4}.paths .node.root{border-radius:50%}.paths .node.root .node-label{left:80px;top:0}.paths .zone{color:var(--mint);font-size:12px;letter-spacing:2px}.paths #inspector{left:32px;right:32px;top:auto;bottom:89px;width:auto;height:207px;display:grid;grid-template-columns:260px 1fr 330px;gap:30px;padding:23px 28px;border-top:1px solid #62708070;background:#11202b}.paths .detail-symbol{display:none}.paths h2{font-size:25px;margin-top:15px}.paths .detail-copy{font-size:11px;margin:0}.paths .detail-section{margin-top:0;padding-top:0;border:0}.paths .detail-section p{font-size:11px}.paths .primary{margin-top:12px}.paths .detail-form label{font-size:16px;margin:9px 0}.paths textarea{min-height:58px;max-height:70px;padding:7px 10px}.paths .subnote{margin:7px 0}.paths .detail-form{display:contents}.paths .detail-form .primary{margin-top:8px}.paths .map-tools{right:40px;bottom:302px;left:40px}.paths .map-hint{display:none}.paths .branch-links{margin-top:7px}.paths .branch-links button{padding:5px 8px}
+@keyframes breathe{50%{box-shadow:0 0 0 7px #edc78418,0 0 25px #edc78450}}@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(min-width:1600px){#inspector{width:360px;right:38px}#canvas{right:430px}.intro,.map-tools{right:440px}h1{font-size:40px}.detail-copy{font-size:13px}.paths #inspector{width:auto}}
+@media(max-width:1000px){.study-label{display:none}.intro{right:340px;left:25px}h1{font-size:25px}#inspector{right:16px;width:295px;padding:21px}#canvas{right:322px;left:5px}.map-tools{left:22px;right:330px}.legend{gap:9px;font-size:9px}.simulation-note{display:none}.paths #inspector{grid-template-columns:190px 1fr 270px;gap:18px;padding:18px}.progress{display:none}.paths .detail-copy{line-height:1.6}}
+@media(max-width:700px){.masthead{padding:0 18px;height:54px}.wordmark{font-size:22px}.wordmark span{font-size:9px;letter-spacing:1px}.header-actions{gap:8px;font-size:9px}.header-actions button{font-size:9px;padding:4px}.header-actions a{max-width:64px}.intro,.paths .intro{top:72px;left:20px;right:20px}.eyebrow{font-size:8px;margin-bottom:7px}h1{font-size:26px!important}#description{font-size:10px;margin-top:6px}#canvas,.paths #canvas{inset:159px 6px 348px}#inspector,.paths #inspector{left:14px;right:14px;top:auto;bottom:83px;height:233px;width:auto;display:block;padding:17px 20px;overflow:auto}.detail-symbol{display:none}.detail-top{font-size:8px}h2,.paths h2{font-size:23px;margin:12px 0 8px}.detail-copy,.paths .detail-copy{font-size:11px;line-height:1.5;margin:0}.detail-section,.paths .detail-section{padding-top:12px;margin-top:12px;border-top:1px solid #62708035}.detail-section p{font-size:11px}.primary,.paths .primary{padding:9px;margin-top:12px}.detail-form label{font-size:17px}.map-tools,.paths .map-tools{bottom:323px;left:18px;right:18px}.zoom button{font-size:10px;padding:4px 9px}.map-hint{display:none}.prototype-switcher{bottom:15px;padding:5px;gap:8px}.prototype-switcher div{min-width:160px}.switcher-note{display:none}.prototype-switcher strong{font-size:11px}.paths .detail-form{display:block}.paths textarea{max-height:130px}.node{min-width:32px;min-height:32px}}
+/* Keep the field legible at the overview scale. */
+.node{width:40px;height:40px;padding:9px;color:#93a0ad;border-color:#83909dcc}.node.major{width:52px;height:52px;padding:13px}.node.root{width:70px;height:70px}.node .node-label{font-size:18px;width:205px}.node.root .node-label{font-size:20px}#connections path{stroke:#62708099}.paths .node{width:23px;height:23px;min-width:23px;min-height:23px;padding:4px}.paths .node.major{width:33px;height:33px;padding:7px}.paths .node.root{display:none}.paths .zone{font-size:12px}.paths .zone span{font-size:10px;margin-top:5px}.paths .node .node-label{display:none}.node .tooltip{font-size:19px}.paths .node .tooltip{font-size:13px}
+
+/* Paper, graphite, and jewel tones retain the skill-tree hierarchy in daylight. */
+:root.light{color-scheme:light;--ink:#f6f5f0;--paper:#233b40;--slate:#7d8989;--mint:#207566;--gold:#94611b;--blue:#426eaa}
+.light body{background:radial-gradient(ellipse at 40% 65%,#dfebe16b,transparent 65%),var(--ink)}
+.light body.paths{background:var(--ink)}
+.light .masthead{background:#fbfaf6;border-color:#d8ddd7}
+.light :is(.study-label,.header-actions button,#description,.progress span,.detail-top,.detail-copy,.legend,.map-hint,.simulation-note,.switcher-note,.prototype-switcher div>span){color:#586e70}
+.light :is(.map-hint span,.zone,.zone span){color:#637877}
+.light .subnote{color:#637877!important}
+.light button:hover,.light a:hover{color:#164f47;border-color:var(--mint)}
+.light #theme-toggle[aria-pressed=true]{background:#e0ece5;color:#1c6659;border-color:#a4c5b7}
+#theme-toggle{border:1px solid #62708050;padding:7px 10px}
+.light #canvas{background-image:radial-gradient(#647e7545 .7px,transparent .8px),radial-gradient(#647e751a .7px,transparent .9px)}
+.light .paths #canvas{background-image:linear-gradient(90deg,#62708015 1px,transparent 1px)}
+.light #connections path{stroke:#a6b1ae;stroke-width:1.5}
+.light #connections path.lit{stroke:var(--accent);opacity:.9;stroke-width:2.4;filter:drop-shadow(0 0 3px color-mix(in srgb,var(--accent) 25%,transparent))}
+.light .node{background:#f0f1ed;border-color:#91a29d;color:#7a8b86}
+.light .node.explored{background:color-mix(in srgb,var(--accent) 11%,#fbfaf6);border-color:var(--accent);color:var(--accent);box-shadow:0 0 15px color-mix(in srgb,var(--accent) 17%,transparent)}
+.light .node.researching,.light .node.question{color:var(--gold);border-color:var(--gold);background:#f5ebd7}
+.light .node:hover{color:#233b40;border-color:#233b40}
+.light .node .node-label{color:#4b6560}
+.light .node.root .node-label{color:var(--mint)}
+.light .node .tooltip{background:#fffef9;color:#233b40;border-color:#c3d0c9;box-shadow:0 4px 12px #233b4012}
+.light #inspector{background:linear-gradient(145deg,#fffefb,#edf2eb);border-color:#cdd9cf;border-top-color:var(--mint);box-shadow:0 12px 40px #314d3910}
+.light .paths #inspector{background:#fdfdf8}
+.light .detail-section{border-color:#cdd9cf}
+.light :is(.detail-section p,.branch-links button){color:#47605e}
+.light .primary{background:var(--mint);color:#fffdf5;border-color:var(--mint)}
+.light .primary:hover{background:#165c50;color:#fffdf5}
+.light textarea{background:#fffefa;color:#233b40;border-color:#b8c8bf}
+.light textarea::placeholder{color:#70827c}
+.light .prototype-switcher{background:#fffef9;border-color:#cdd9cf;box-shadow:0 8px 30px #314d3914}
+.node{cursor:grab;touch-action:none;user-select:none}
+#canvas.dragging,#canvas.dragging .node{cursor:grabbing;user-select:none}
+#canvas.dragging .tooltip{opacity:0}
+@media(max-width:700px){.masthead{gap:10px;padding-inline:12px}.header-actions{gap:4px}#theme-toggle{padding:5px;font-size:9px}.map-tools,.paths .map-tools{gap:6px}.legend{gap:7px;font-size:8px}.zoom button{padding:4px 6px}.wordmark span{max-width:73px}.wordmark{gap:5px}}
+
+</style></head>
+<body>
+  <header class="masthead"><a class="wordmark" href="#">✳ <span>GRILL MY MIND</span></a><span class="study-label">INTERACTION STUDY <b>·</b> SIMULATED RESEARCH</span><div class="header-actions"><button id="theme-toggle" aria-pressed="false">Light mode</button><button id="reset">Reset preview</button><span>Standalone prototype</span></div></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow" id="eyebrow">01 / CONSTELLATION</p><h1 id="map-title">An idea. A world to discover.</h1><p id="description">Follow a thread. See where it leads.</p></div><div class="progress"><strong id="count">0</strong><span>of <b id="total">0</b> ideas explored</span><div class="progress-track"><i id="progress-fill"></i></div></div></section>
+    <section id="canvas" aria-label="Skill tree. Drag nodes to move them, or drag the background to pan. Select a node to see its details. Focus a node and use Alt plus arrow keys to move it."><div id="world"><svg id="connections" aria-hidden="true"></svg><div id="zones" aria-hidden="true"></div><div id="nodes"></div></div><div class="map-hint" id="map-hint">Make room for your thinking.<br><span>Drag a node to move it. Drag the background to pan.</span></div></section>
+    <aside id="inspector" aria-label="Selected idea"></aside>
+    <div class="map-tools"><span class="legend"><span><i class="gray"></i>Unexplored</span><span><i class="gold"></i>Needs you</span><span><i class="mint"></i>Explored</span></span><div class="zoom"><button id="reset-layout" title="Restore node positions in this layout">Reset layout</button><button id="zoom-out" aria-label="Zoom out">−</button><button id="fit" aria-label="Fit tree">Fit</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div>
+  </main>
+  <footer class="prototype-switcher"><div><span>SAVED DESIGN · PREFERRED DIRECTION</span><strong id="variant-name">01 — Constellation</strong></div></footer>
+  <div class="simulation-note">Offline prototype · simulated research · reload to reset</div><div id="announcement" class="sr-only" role="status" aria-live="polite"></div>
+  <script>
+(async()=>{
+// Throwaway interaction study. All research and edits stay in browser memory.
+const $ = selector => document.querySelector(selector);
+const escape = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const icons = [
+  '<path d="M4 12h16M12 4v16M6 6l12 12M18 6 6 18"/><circle cx="12" cy="12" r="4"/>',
+  '<path d="m12 3 9 9-9 9-9-9zM8 12h8M12 8v8"/>',
+  '<circle cx="12" cy="12" r="8"/><path d="M4 12h16M12 4c-5 5-5 11 0 16 5-5 5-11 0-16"/>',
+  '<path d="M5 5h5v5H5zM14 14h5v5h-5zM7 10v7h7M10 7h7v7"/>',
+  '<path d="m13 3-8 11h6l-1 7 9-12h-7z"/>',
+  '<path d="m12 3 8 4v6c0 4-8 8-8 8s-8-4-8-8V7zM8 12l3 3 5-6"/>',
+  '<path d="M4 9a8 8 0 1 1 1 9M4 3v6h6M12 7v5l4 2"/>'
+];
+const symbol = index => `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[index % icons.length]}</svg>`;
+const domains = [
+  {name:'The experience',accent:'var(--mint)',icon:1,desc:'Make a complex idea feel inviting without hiding its complexity.',topics:['A map you can navigate','Questions at the right time','Signals that feel meaningful'],leaves:[['Zoom and orientation','Find a thought again','Keyboard exploration'],['One question or many?','Pause and return','A useful recommendation'],['What does a glow mean?','Progress without pressure','Show the unknown']],question:'When you open a complex map, what should help you choose your next step?',finding:'Keep suggested branches available but visually quiet. Let a selected node explain why it matters before asking for commitment.'},
+  {name:'The knowledge',accent:'var(--blue)',icon:2,desc:'Keep the reasoning useful to people and to the next agent that reads it.',topics:['A format agents can read','Evidence and uncertainty','Relationships, not just lists'],leaves:[['A small entry point','Details on demand','Context window budget'],['Source provenance','Facts vs. assumptions','Conflicting findings'],['Cross-domain connections','Dependencies','Changing your mind']],question:'What should an agent understand first when it opens this map?',finding:'Start with a short overview, then follow stable node references into relevant evidence. Keep assumptions separate from confirmed decisions.'},
+  {name:'The agents',accent:'var(--gold)',icon:3,desc:'Explore in parallel while keeping the person in charge of scope.',topics:['Activate a branch','Keep research bounded','Work across coding agents'],leaves:[['User consent in the UI','Job ownership','Progress visibility'],['A stopping condition','Ask before expanding','Recover interrupted work'],['Codex workflow','Claude Code workflow','Copilot workflow']],question:'What should cause an agent to stop researching and come back to you?',finding:'Treat activation as permission for one branch. Stop at a useful finding or a consequential question; propose deeper work as new gray nodes.'},
+  {name:'The discovery',accent:'var(--mint)',icon:4,desc:'Uncover valuable directions, including questions nobody thought to ask.',topics:['Find hidden assumptions','Suggest the next direction','Know when to stop'],leaves:[['A counterexample','The smallest experiment','Where might this fail?'],['Adjacent domains','Alternative approaches','Research priority'],['Enough to build','Unresolved questions','Avoid endless exploration']],question:'Which matters more here: broad coverage or depth on the riskiest assumption?',finding:'Use broad discovery to suggest options, then prioritize the assumption most likely to change the plan. Coverage alone is not understanding.'},
+  {name:'The trust',accent:'var(--blue)',icon:5,desc:'Make the state of the exploration honest and legible at every step.',topics:['Who decided what?','Research you can inspect','Safe local ownership'],leaves:[['User decisions','Agent suggestions','Revision history'],['Cite the source','Surface disagreement','Flag stale conclusions'],['Local-first files','No silent execution','Portable project data']],question:'What would make you trust a researched node enough to build on it?',finding:'Show the source, the reasoning, and remaining uncertainty. A lit node means explored; it should not imply the user has accepted its conclusion.'},
+  {name:'The continuity',accent:'var(--gold)',icon:6,desc:'Return to an exploration later without reconstructing the whole conversation.',topics:['Resume a session','Build from the map','Let an idea evolve'],leaves:[['A useful recap','Pending questions','Work across devices'],['Read the right branch','Accepted decisions','Implementation constraints'],['Revise an assumption','Invalidate descendants','Compare alternatives']],question:'When you return a week later, what would you want the map to remind you of?',finding:'Resume with the latest decisions, unanswered questions, and active branches. Preserve the reasoning behind changes instead of replacing it silently.'}
+];
+let nodes, selected = 'root', variant = 'constellation';
+let timers = new Set(), transform = {x:0,y:0,scale:1}, dragging, mapTitle = 'Grill My Mind';
+let lightMode = true;
+const offsets = {constellation: new Map(), paths: new Map()};
+const stateNames = {suggested:'Unexplored',explored:'Explored',researching:'Researching',question:'Needs your answer'};
+function seed() {
+  nodes = [{id:'root',title:'Grill My Mind',domain:-1,depth:0,status:'explored',icon:0,summary:'A living map of an idea. Follow questions into research, and turn research into shared understanding.'}];
+  domains.forEach((domain,d) => {
+    const id = `d${d}`;
+    nodes.push({id,parent:'root',title:domain.name,domain:d,depth:1,status:d < 3 ? 'explored':'suggested',icon:domain.icon,summary:domain.desc});
+    domain.topics.forEach((title,t) => {
+      const topicId = `${id}-${t}`;
+      nodes.push({id:topicId,parent:id,title,domain:d,depth:2,branch:t,status:d<3&&t===0?'explored':'suggested',icon:domain.icon});
+      domain.leaves[t].forEach((title,l) => nodes.push({id:`${topicId}-${l}`,parent:topicId,title,domain:d,depth:3,branch:t,leaf:l,status:d===0&&t===0&&l===0?'explored':'suggested',icon:(domain.icon+l)%7}));
+    });
+  });
+}
+function position(node) {
+  const point = basePosition(node), offset = offsets[variant].get(node.id);
+  return offset ? {x:point.x+offset.x,y:point.y+offset.y} : point;
+}
+function basePosition(node) {
+  if (variant === 'paths') {
+    const rect=$('#canvas').getBoundingClientRect();
+    const height=rect.height/Math.max(.5,rect.width/1400);
+    const y=value=>22+(height-50)*value;
+    if(node.id==='root') return {x:700,y:18};
+    const cx = 118 + node.domain * 232;
+    if(node.depth===1) return {x:cx,y:y(.24)};
+    if(node.depth===2) return {x:cx+(node.branch-1)*67,y:y(.53+(node.branch===1?.04:0))};
+    if(node.depth===3) return {x:cx+(node.branch-1)*67+(node.leaf-1)*22,y:y(.82+(node.leaf===1?.05:0))};
+    const parent = basePosition(nodes.find(n=>n.id===node.parent));
+    return {x:parent.x+(node.leaf===0?-25:25),y:Math.min(height-18,parent.y+55)};
+  }
+  if(node.id==='root')return{x:700,y:500};
+  const base = (-155 + node.domain*60)*Math.PI/180;
+  const angle = base + (node.depth>=2?(node.branch-1)*.22:0) + (node.depth>=3?(node.leaf-1)*.065:0);
+  const radius = node.depth===1?190+(node.domain%3)*28:node.depth===2?325+node.branch*35:node.depth===3?460+node.leaf*40+node.branch*28:620;
+  return {x:700+Math.cos(angle)*radius,y:500+Math.sin(angle)*radius*.64};
+}
+function renderGraph() {
+  const edges = [], buttons = [];
+  nodes.forEach(node=>{
+    const p = position(node), accent = node.domain<0?'var(--mint)':domains[node.domain].accent;
+    if(node.parent){const parent = nodes.find(n=>n.id===node.parent), q=position(parent), lit=node.status==='explored';
+      const path=variant==='paths'?`M${q.x},${q.y} C${q.x},${(q.y+p.y)/2} ${p.x},${(q.y+p.y)/2} ${p.x},${p.y}`:`M${q.x},${q.y} L${p.x},${p.y}`;
+      edges.push(`<path d="${path}" class="${lit?'lit':''}" style="--accent:${accent}"/>`);
+    }
+    const label = node.id==='root'||(variant==='constellation'&&node.depth===1);
+    buttons.push(`<button class="node ${node.depth<2?'major':''} ${node.id==='root'?'root':''} ${node.status} ${node.id===selected?'selected':''}" data-node="${node.id}" style="left:${p.x}px;top:${p.y}px;--accent:${accent}" aria-label="${escape(node.title)}, ${stateNames[node.status]}" aria-pressed="${node.id===selected}">${symbol(node.icon)}<span class="tooltip">${escape(node.title)} · ${stateNames[node.status]}</span>${label?`<span class="node-label">${escape(node.title)}</span>`:''}</button>`);
+  });
+  $('#connections').innerHTML=edges.join('');$('#nodes').innerHTML=buttons.join('');
+  $('#zones').innerHTML=domains.map((domain,d)=>{
+    const p=variant==='paths'?{x:118+d*232,y:3}:{x:700+Math.cos((-155+d*60)*Math.PI/180)*460,y:500+Math.sin((-155+d*60)*Math.PI/180)*460*.76-64};
+    return `<div class="zone" style="left:${p.x}px;top:${p.y}px">${variant==='paths'?escape(domain.name):`0${d+1}`} ${variant==='paths'?`<span>${nodes.filter(n=>n.domain===d&&n.status==='explored').length} / ${nodes.filter(n=>n.domain===d).length} explored</span>`:''}</div>`;
+  }).join('');
+  const explored=nodes.filter(n=>n.status==='explored').length;
+  $('#count').textContent=explored;$('#total').textContent=nodes.length;$('#progress-fill').style.width=`${explored/nodes.length*100}%`;
+}
+function renderDetail() {
+  const node=nodes.find(n=>n.id===selected),domain=domains[node.domain],root=node.id==='root';
+  const heading=`<div class="detail-heading"><div class="detail-top"><span>${root?'THE STARTING IDEA':`0${node.domain+1} / ${escape(domain.name.replace('The ',''))}`}</span><span class="status ${node.status}">${stateNames[node.status]}</span></div><div class="detail-symbol" style="--accent:${domain?.accent||'var(--mint)'}">${symbol(node.icon)}</div><h2>${escape(node.title)}</h2><p class="detail-copy">${escape(node.summary||`Explore ${node.title.toLowerCase()} and how it might shape the idea. ${domain.desc}`)}</p></div>`;
+  let body, action;
+  if(root) {
+    body='<div class="detail-section"><span class="small-label">Your exploration</span><p>Every gray node is a possible direction. Open one to see why it matters, then decide whether to explore it.</p><p class="subnote">Nothing is locked. You choose the order and the depth.</p></div>';
+    action='<div><button class="primary" data-select="d0-1">Try a question-led exploration ↗</button><p class="subnote">This preview uses illustrative branches and simulated findings.</p></div>';
+  } else if(node.status==='suggested') {
+    body=`<div class="detail-section"><span class="small-label">Why follow this thread?</span><p>${escape(domain.question)}</p><p class="subnote">A focused question can reveal a constraint before it becomes a costly assumption.</p></div>`;
+    action='<div><button class="primary" id="explore">Explore this idea ↗</button><p class="subnote">Preview: a question, then a simulated finding.<br>Only this branch lights up.</p></div>';
+  } else if(node.status==='researching') {
+    body='<div class="detail-section"><span class="small-label">Exploring this thread</span><p>Connecting the idea to its surrounding questions…</p></div>';
+    action='<div><button class="primary" disabled>Simulating research…</button><p class="subnote">This is an interaction preview. No agent is running.</p></div>';
+  } else if(node.status==='question') {
+    body=`<form class="detail-form" id="answer-form"><div class="detail-section"><span class="small-label">One question before we go deeper</span><label for="answer">${escape(domain.question)}</label><textarea id="answer" name="answer" required maxlength="2000" placeholder="A rough answer is enough…"></textarea></div><div><button class="primary" type="submit">Answer & continue ↗</button><p class="subnote">Your answer stays in this preview only.</p></div></form>`;action='';
+  } else {
+    body=`<div class="detail-section"><span class="small-label">${node.answer?'Simulated finding':'Illustrative finding'}</span><p>${escape(domain.finding)}</p>${node.answer?`<p class="answer">You said: ${escape(node.answer)}</p>`:''}</div>`;
+    const children=nodes.filter(n=>n.parent===node.id&&n.status==='suggested').sort((a,b)=>b.depth-a.depth).slice(0,3);
+    action=`<div class="detail-section"><span class="small-label">${node.answer?'New possibilities':'Keep exploring'}</span><div class="branch-links">${children.map(child=>`<button data-select="${child.id}">${escape(child.title)} ↗</button>`).join('')||'<p>No deeper branches in this preview.</p>'}</div><p class="subnote">Explored means investigated, not decided.<br>New directions wait for you to activate them.</p></div>`;
+  }
+  $('#inspector').innerHTML=heading+body+action;
+}
+function select(id) {selected=id;renderGraph();renderDetail();$('#inspector').scrollTop=0;}
+function applyTransform() {$('#world').style.transform=`translate(${transform.x}px,${transform.y}px) scale(${transform.scale})`;}
+function fit() {
+  const rect=$('#canvas').getBoundingClientRect();
+  if(offsets[variant].size){
+    const points=nodes.filter(n=>variant!=='paths'||n.id!=='root').map(position);
+    const minX=Math.min(...points.map(p=>p.x))-80,maxX=Math.max(...points.map(p=>p.x))+80;
+    const minY=Math.min(...points.map(p=>p.y))-70,maxY=Math.max(...points.map(p=>p.y))+80;
+    const scale=Math.min(2.8,rect.width/(maxX-minX),rect.height/(maxY-minY));
+    transform={scale,x:rect.width/2-(minX+maxX)/2*scale,y:rect.height/2-(minY+maxY)/2*scale};
+  }else{
+    const scale=variant==='paths'?Math.max(.5,rect.width/1400):Math.max(.4,Math.min(rect.width/1250,rect.height/850));
+    transform={scale,x:rect.width/2-700*scale,y:variant==='paths'?0:rect.height/2-500*scale};
+  }
+  renderGraph();applyTransform();
+}
+function zoom(factor) {const rect=$('#canvas').getBoundingClientRect(),old=transform.scale;transform.scale=Math.min(2.8,Math.max(.18,old*factor));const ratio=transform.scale/old;transform.x=rect.width/2-(rect.width/2-transform.x)*ratio;transform.y=rect.height/2-(rect.height/2-transform.y)*ratio;applyTransform();}
+function applyVariant() {
+  document.body.classList.toggle('paths',variant==='paths');
+  $('#eyebrow').textContent=variant==='paths'?'02 / RESEARCH PATHS':'01 / CONSTELLATION';
+  $('#variant-name').textContent=variant==='paths'?'02 — Research paths':'01 — Constellation';
+  $('#description').textContent=variant==='paths'?'Six domains. Many directions. Choose your own depth.':'Follow a thread. See where it leads.';
+
+  renderGraph();renderDetail();fit();
+}
+function delay(callback) {const timer=setTimeout(()=>{timers.delete(timer);callback();},1200);timers.add(timer);}
+function research() {
+  const node=nodes.find(n=>n.id===selected);node.status='researching';renderGraph();renderDetail();
+  $('#announcement').textContent=`Preview research started for ${node.title}.`;
+  delay(()=>{node.status='question';renderGraph();if(selected===node.id)renderDetail();$('#announcement').textContent=`${node.title} needs your answer.`;});
+}
+function answer(event) {
+  event.preventDefault();const form=event.target;if(form.id!=='answer-form')return;
+  const value=new FormData(form).get('answer').trim();if(!value){$('#answer').setCustomValidity('Add a short answer to continue.');$('#answer').reportValidity();return;}
+  const node=nodes.find(n=>n.id===selected);node.answer=value;node.status='researching';renderGraph();renderDetail();
+  delay(()=>{node.status='explored';
+    for(let leaf=0;leaf<2;leaf++)nodes.push({id:`${node.id}-new${leaf}`,parent:node.id,title:leaf?'Test the assumption':'Explore the trade-off',domain:node.domain,depth:4,branch:node.branch??1,leaf,status:'suggested',icon:leaf?4:2});
+    renderGraph();if(selected===node.id)renderDetail();$('#announcement').textContent=`${node.title} explored. Two new suggestions are available.`;
+  });
+}
+$('#nodes').addEventListener('click',event=>{const button=event.target.closest('[data-node]');if(button)select(button.dataset.node);});
+$('#inspector').addEventListener('click',event=>{const button=event.target.closest('button');if(button?.dataset.select)select(button.dataset.select);else if(button?.id==='explore')research();});
+$('#inspector').addEventListener('submit',answer);
+$('#inspector').addEventListener('input',event=>{if(event.target.id==='answer')event.target.setCustomValidity('');});
+function applyTheme(){
+  document.documentElement.classList.toggle('light',lightMode);
+  $('#theme-toggle').setAttribute('aria-pressed',String(lightMode));
+
+}
+$('#theme-toggle').onclick=()=>{lightMode=!lightMode;applyTheme();};
+document.addEventListener('keydown',event=>{
+  if(event.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+  const button=event.target.closest('[data-node]');
+  if(button&&event.altKey&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)){
+    event.preventDefault();const id=button.dataset.node,offset=offsets[variant].get(id)||{x:0,y:0};
+    offsets[variant].set(id,{x:offset.x+(event.key==='ArrowLeft'?-24:event.key==='ArrowRight'?24:0),y:offset.y+(event.key==='ArrowUp'?-24:event.key==='ArrowDown'?24:0)});
+    renderGraph();$(`[data-node="${id}"]`).focus();return;
+  }
+});
+$('#reset').onclick=()=>{timers.forEach(clearTimeout);timers.clear();offsets.constellation.clear();offsets.paths.clear();seed();selected='root';applyVariant();$('#announcement').textContent='Preview reset. No saved map was changed.';};
+$('#reset-layout').onclick=()=>{offsets[variant].clear();fit();$('#announcement').textContent='Node positions restored for this layout.';};
+$('#zoom-in').onclick=()=>zoom(1.25);$('#zoom-out').onclick=()=>zoom(.8);$('#fit').onclick=fit;
+$('#canvas').addEventListener('pointerdown',event=>{
+  if(!event.isPrimary||event.button!==0||dragging)return;
+  const id=event.target.closest('[data-node]')?.dataset.node;
+  dragging={id,pointerId:event.pointerId,x:event.clientX,y:event.clientY,tx:transform.x,ty:transform.y,offset:{...(offsets[variant].get(id)||{x:0,y:0})},scale:transform.scale,moved:false};
+  $('#canvas').setPointerCapture(event.pointerId);
+});
+$('#canvas').addEventListener('pointermove',event=>{
+  if(!dragging||event.pointerId!==dragging.pointerId)return;
+  const dx=event.clientX-dragging.x,dy=event.clientY-dragging.y;
+  if(!dragging.moved&&Math.hypot(dx,dy)<4)return;
+  dragging.moved=true;$('#canvas').classList.add('dragging');
+  if(dragging.id){
+    offsets[variant].set(dragging.id,{x:dragging.offset.x+dx/dragging.scale,y:dragging.offset.y+dy/dragging.scale});
+    renderGraph();
+  }else{transform.x=dragging.tx+dx;transform.y=dragging.ty+dy;applyTransform();}
+});
+function finishDrag(event){
+  if(!dragging||event.pointerId!==dragging.pointerId)return;
+  const finished=dragging;dragging=null;$('#canvas').classList.remove('dragging');
+  if($('#canvas').hasPointerCapture(event.pointerId))$('#canvas').releasePointerCapture(event.pointerId);
+  if(event.type==='pointerup'&&finished.id){
+    select(finished.id);
+    if(finished.moved)$('#announcement').textContent='Node moved. Its connections remain attached.';
+  }
+}
+for(const type of ['pointerup','pointercancel','lostpointercapture'])$('#canvas').addEventListener(type,finishDrag);
+$('#canvas').addEventListener('wheel',event=>{event.preventDefault();if(!dragging)zoom(event.deltaY<0?1.1:1/1.1);},{passive:false});
+new ResizeObserver(fit).observe($('#canvas'));
+seed();applyTheme();applyVariant();
+
+})();
+</script>
+</body></html>

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "id": "map-130ce447",
+  "title": "An app that works offline",
+  "rootId": "node-8ee72e83",
+  "revision": 5,
+  "demo": true,
+  "createdAt": "2026-09-23T03:23:07.613Z",
+  "updatedAt": "2026-09-23T03:23:42.356Z",
+  "nodes": [
+    {
+      "id": "node-8ee72e83",
+      "title": "An app that works offline",
+      "prompt": "Explore a shared field notebook that works without a connection, then synchronizes when the team is back online.",
+      "body": "Explore a shared field notebook that works without a connection, then synchronizes when the team is back online.",
+      "summary": "A shared field notebook, wherever the work takes you.",
+      "kind": "idea",
+      "parentId": null,
+      "status": "explored",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:23:07.613Z"
+    },
+    {
+      "id": "node-d59f0cac",
+      "title": "When edits disagree",
+      "prompt": "What should happen when two teammates change the same note offline?",
+      "body": "What should happen when two teammates change the same note offline?",
+      "summary": "What should happen when two teammates change the same note offline?",
+      "kind": "question",
+      "parentId": "node-8ee72e83",
+      "status": "interrupted",
+      "reviewState": "unreviewed",
+      "contentRevision": 2,
+      "questions": [
+        {
+          "id": "q-40d7b71c",
+          "text": "Should conflicting edits be merged automatically, or should a person choose which version to keep?",
+          "answer": "UI test answer for this illustrative map: let a person choose the version to keep.",
+          "answeredAt": "2026-09-23T03:23:18.679Z"
+        }
+      ],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:23:07.613Z"
+    },
+    {
+      "id": "node-37738c93",
+      "title": "What lives on the device?",
+      "prompt": "Explore storage, attachments, and what happens when a device runs out of space.",
+      "body": "Explore storage, attachments, and what happens when a device runs out of space.",
+      "summary": "Explore storage, attachments, and what happens when a device runs out of space.",
+      "kind": "research",
+      "parentId": "node-8ee72e83",
+      "status": "interrupted",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:23:07.613Z"
+    },
+    {
+      "id": "node-edb0b0e3",
+      "title": "The first useful version",
+      "prompt": "A notebook that lets one person capture text offline and sync it later.",
+      "body": "A notebook that lets one person capture text offline and sync it later.",
+      "summary": "A notebook that lets one person capture text offline and sync it later.",
+      "kind": "decision",
+      "parentId": "node-8ee72e83",
+      "status": "explored",
+      "reviewState": "accepted",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:23:07.613Z"
+    },
+    {
+      "id": "node-d04a4429",
+      "title": "A lost device",
+      "prompt": "What information needs protection, and can the team revoke access?",
+      "body": "What information needs protection, and can the team revoke access?",
+      "summary": "What information needs protection, and can the team revoke access?",
+      "kind": "risk",
+      "parentId": "node-37738c93",
+      "status": "suggested",
+      "reviewState": "unreviewed",
+      "contentRevision": 1,
+      "questions": [],
+      "sources": [],
+      "stale": false,
+      "createdAt": "2026-09-23T03:23:07.613Z"
+    }
+  ],
+  "edges": [
+    {
+      "from": "node-8ee72e83",
+      "to": "node-d59f0cac",
+      "type": "contains"
+    },
+    {
+      "from": "node-8ee72e83",
+      "to": "node-37738c93",
+      "type": "contains"
+    },
+    {
+      "from": "node-8ee72e83",
+      "to": "node-edb0b0e3",
+      "type": "contains"
+    },
+    {
+      "from": "node-37738c93",
+      "to": "node-d04a4429",
+      "type": "contains"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job-4afef035",
+      "nodeId": "node-d59f0cac",
+      "status": "cancelled",
+      "reason": "User answered the branch questions. Continue this investigation.",
+      "createdAt": "2026-09-23T03:23:18.679Z",
+      "finishedAt": "2026-09-23T03:23:28.349Z"
+    },
+    {
+      "id": "job-635d37ed",
+      "nodeId": "node-37738c93",
+      "status": "cancelled",
+      "reason": "User activated this branch. Explore only this direction.",
+      "createdAt": "2026-09-23T03:23:33.155Z",
+      "finishedAt": "2026-09-23T03:23:42.356Z"
+    }
+  ],
+  "history": [
+    {
+      "at": "2026-09-23T03:23:07.613Z",
+      "type": "example-created",
+      "nodeId": "node-8ee72e83",
+      "detail": "Illustrative content, not agent research."
+    },
+    {
+      "at": "2026-09-23T03:23:18.679Z",
+      "type": "answered",
+      "nodeId": "node-d59f0cac",
+      "detail": "q-40d7b71c"
+    },
+    {
+      "at": "2026-09-23T03:23:18.679Z",
+      "type": "activated",
+      "nodeId": "node-d59f0cac",
+      "detail": "User answered the branch questions. Continue this investigation."
+    },
+    {
+      "at": "2026-09-23T03:23:28.349Z",
+      "type": "cancelled",
+      "nodeId": "node-d59f0cac",
+      "detail": ""
+    },
+    {
+      "at": "2026-09-23T03:23:33.155Z",
+      "type": "activated",
+      "nodeId": "node-37738c93",
+      "detail": "User activated this branch. Explore only this direction."
+    },
+    {
+      "at": "2026-09-23T03:23:42.356Z",
+      "type": "cancelled",
+      "nodeId": "node-37738c93",
+      "detail": ""
+    }
+  ],
+  "view": {
+    "positions": {}
+  }
+}
