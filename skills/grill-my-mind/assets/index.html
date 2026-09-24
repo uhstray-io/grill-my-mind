@@ -21,8 +21,10 @@
       </section>
       <section id="workspace" class="workspace hidden" aria-label="Mind map workspace">
         <div class="canvas-column"><div class="canvas-heading"><div><h1 id="canvas-title"></h1><p id="canvas-subtitle"></p></div><span id="saved-state" class="saved-state">Saved</span></div>
+          <div id="node-finder" class="node-finder"><label for="find-node">Find an idea</label><input id="find-node" type="search" placeholder="Search this map…" autocomplete="off" aria-controls="node-results"><div id="node-results" class="node-results" hidden></div></div>
           <div id="canvas" class="canvas" aria-label="Constellation. Drag a node to move it or the background to pan. Focus a node and use Alt plus arrow keys to move it."><div id="world" class="world"><svg id="edges" aria-hidden="true"></svg><div id="nodes"></div></div><div id="empty-hint" class="canvas-hint hidden"></div></div>
           <div class="canvas-toolbar"><div class="legend"><span><i class="suggested-dot"></i> Unexplored</span><span><i class="queued-dot"></i> Queued</span><span><i class="question-dot"></i> Needs you</span><span><i class="explored-dot"></i> Explored</span></div><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="Zoom in">＋</button><button id="fit-map" aria-label="Fit map to canvas" title="Fit map">⛶</button></div></div><div class="canvas-instruction">Drag nodes to arrange your thinking · connections stay attached</div>
+          <button id="focus-selected" class="secondary focus-selected">Focus selected idea</button>
         </div><aside id="detail" class="detail" aria-label="Selected idea"></aside>
       </section>
     </main>

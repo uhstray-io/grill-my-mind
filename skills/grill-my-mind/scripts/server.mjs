@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { readFile, mkdir, open, unlink } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { Store, Problem, publicMap, atomicJson } from './store.mjs';
+import { contextExcerpt } from './context.mjs';
 
 const assets = fileURLToPath(new URL('../assets/', import.meta.url));
 export async function startServer({ workspace = process.cwd(), port = 4317, dataDirectory } = {}) {
@@ -46,6 +47,8 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
       if (url.pathname.startsWith('/api/')) {
         if (req.headers.authorization !== `Bearer ${token}`) throw new Problem('Open the workspace again to reconnect.', 401);
         if (req.method === 'GET' && url.pathname === '/api/maps') return send(res, 200, { maps: await store.list(), bridge: { listening: Date.now() - lastSeen < 40000, worker } });
+        const contextRoute = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)\/context$/);
+        if (req.method === 'GET' && contextRoute) return send(res, 200, contextExcerpt(await store.get(contextRoute[1]), url.searchParams.get('node'), Object.fromEntries(url.searchParams)));
         const match = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)(?:\/(action|result|fail))?$/);
         if (req.method === 'GET' && match && !match[2]) return send(res, 200, publicMap(await store.get(match[1])));
         if (req.method === 'GET' && url.pathname === '/api/next') {

@@ -30,6 +30,8 @@ Status: first MVP implemented after the user approved the execution, editing, an
 - Let agents read saved maps, but route edits through the app/CLI.
 - An activated branch investigates until it has findings or needs a user answer. New directions require separate activation.
 - On 2026-09-23, selected Constellation/version 1 for the working prototype, including light/dark modes and draggable connected nodes. Research paths/version 2 is rejected. The original card map is saved for comparison; future refinement or replacement remains possible. See [saved prototypes and verification](../prototypes/README.md).
+- In the large-map review, requested closer, less symmetric placement, visible neighboring directions when focused, and click-to-center navigation. Open maps around a readable local neighborhood; keep full-map fitting optional.
+- An explored branch is complete. Further exploration grows a new direction, rather than re-running the completed branch. Implemented in issue 10: changed premises create inactive children and flag affected findings for review while preserving earlier content.
 
 ## Open product decisions
 

@@ -31,7 +31,9 @@ Research synthesis: [persistent exploration workspace proposal](../../docs/resea
 
 ## Follow-up work
 
-- Issues 01–08 are resolved. Next candidates are a longer real exploration measuring context growth and dense-map navigation, plus live Claude Code/Copilot trials. No further implementation ticket has been selected yet.
+- Issues 01–09 are resolved. [Issue 09](issues/09-large-map-trial.md) includes owner feedback, compact navigation refinements, and an independent resumption trial; actual long-session host context remains unmeasured.
+- [Issue 10, keep explored branches complete and grow new directions](issues/10-completed-branches.md) is resolved. UI and command guards preserve completed findings; changed premises create inactive child investigations.
+- [Issue 11, long-session context and targeted linked-document retrieval](issues/11-context-growth.md) is in progress. Targeted reads and CLI output measurements are implemented and verified; actual long-session host context and compaction remain unmeasured. Live Claude Code/Copilot trials remain a later candidate.
 
 ## Not yet specified
 

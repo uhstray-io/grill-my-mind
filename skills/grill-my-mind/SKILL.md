@@ -25,15 +25,18 @@ Read [the bridge reference](references/bridge.md) for command and result shapes.
 - When the host supports subagents and the user permits their use, a bounded investigation can be delegated with only its packet. Otherwise investigate in the current agent. Never invent a subagent capability or require one for basic use.
 - Save a result JSON file under the workspace's `.grill-my-mind/results/`, then deliver it with the `result` command. The UI will show the findings, questions, and suggested children.
 - A question pauses that branch. Its answer is saved in the browser and queues continuation after all pending questions are answered. Newly suggested directions never activate automatically.
+- A result without questions completes the branch. Never reactivate a completed branch or replace its findings. Suggest a new child direction for further work. If a completed premise changes, `fork-revision` creates an inactive child and flags affected findings for review while preserving the earlier content; the user must activate the child separately.
 - If the job cannot be completed, record the reason with `fail`. Respect the user's security-stop and permission rules. Do not turn a block into repeated retries.
 
 While the user is actively exploring, continue bounded `next` waits and process returned jobs. Avoid narrating idle responses or re-reading the whole map. If there is no work for approximately two minutes, finish with the workspace URL and tell the user to ask you to resume when ready. User instructions to keep listening or stop take precedence. The UI reports that the agent is away after polling stops. Do not create an automation to maintain the bridge unless asked.
 
 ## Keep context small
 
-The packet contains the selected node, relevant ancestor/relationship summaries, recent answers, and file pointers. Read those linked files only when needed. Do not load the entire `map.json`, all transcripts, or the planning/research documents of this repository merely to run a session.
+The packet contains the selected node, relevant ancestor/relationship summaries, recent answers with question IDs, and file pointers. Prefer `read --map ID --node ID --section questions --query "constraint"` or `--question ID` when an older answer is needed. Other sections are `summary`, `premise`, `findings`, `sources`, and `relationships`. Read only the relevant section. Do not load the entire `map.json`, all transcripts, or the planning/research documents of this repository merely to run a session.
 
-Packets target fewer than 16,000 characters; this is a retrieval limit, not a guarantee about total model context or token cost. Every investigation records packet size. Watch repeated waits, tool output, and long research results during real use; note context pressure so the bridge can be adjusted. Read a node's generated Markdown for omitted detail.
+Packets target fewer than 16,000 characters; this is a retrieval limit, not a guarantee about total model context or token cost. Section reads return bounded excerpts with `nextOffset` and `revision`; pass both with the same section/query to continue only when necessary. If the revision changed, restart the targeted read. The default node read is a summary, not a full document. Linked Markdown remains a fallback; locate and read a relevant section instead of loading a long file wholesale.
+
+Every investigation records packet size. `usage --map ID` reports recorded CLI stdout characters/bytes, including targeted reads. This excludes direct file reads, research tools, browser observations, model replies, and host compaction. It is not vendor token usage or a measurement of the active context window. Record those gaps when evaluating a long real session; never substitute account-wide usage limits for per-session measurements.
 
 ## Persist meaning
 

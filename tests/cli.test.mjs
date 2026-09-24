@@ -22,6 +22,20 @@ test('the public CLI claims work, delivers results, and gives compact idle outpu
     const saved = await cli(['result', '--job', job.jobId, '--file', resultFile]); assert.equal(saved.saved, true);
     const idle = await cli(['next', '--wait', '0']); assert.equal(idle.idle, true); assert.ok(JSON.stringify(idle).length < 200);
     const read = await cli(['read', '--map', created.mapId]); assert.equal(read.nodes[0].summary, 'Scope clarified.');
+    const excerpt = await cli(['read', '--map', created.mapId, '--node', created.rootId, '--section', 'findings']);
+    assert.match(excerpt.excerpt, /explicit ownership/); assert.equal(excerpt.nextOffset, null);
+    const actionFile = path.join(workspace, 'action.json');
+    await writeFile(actionFile, JSON.stringify({ expectedRevision: read.revision, nodeId: created.rootId, type: 'activate' }));
+    await assert.rejects(cli(['act', '--map', created.mapId, '--file', actionFile]), /branch is complete/);
+    await writeFile(actionFile, JSON.stringify({ expectedRevision: read.revision, nodeId: created.rootId, type: 'fork-revision', body: 'New scope to investigate separately.' }));
+    await cli(['act', '--map', created.mapId, '--file', actionFile]);
+    const branches = await cli(['read', '--map', created.mapId]);
+    assert.equal(branches.nodes[0].summary, 'Scope clarified.'); assert.equal(branches.nodes[1].status, 'suggested');
+    const usage = await cli(['usage', '--map', created.mapId]);
+    const records = (await readFile(path.join(workspace, '.grill-my-mind/context-usage.jsonl'), 'utf8')).trim().split('\n').map(JSON.parse).filter(e => e.mapId === created.mapId);
+    assert.equal(usage.characters, records.reduce((n,e) => n + e.characters, 0));
+    assert.equal(usage.commands, records.length); assert.equal(usage.byCommand.read.calls, 3);
+    assert.ok(records.every(e => !('claimKey' in e) && !('excerpt' in e)));
   } finally { await app.close(); }
 });
 

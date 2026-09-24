@@ -52,3 +52,31 @@ Browser/agent trial used a new, explicitly labeled `QA — Live constellation` m
 - Both standalone snapshot hashes match the issue-07 record. Their browser-file verification limitation is unchanged; this trial exercised the separate live application over localhost.
 
 The owner's `map-3e4d4390` remains available with its existing queued branch. This implementation trial did not claim or answer that branch. The browser still requires an active invoking agent; it does not launch an LLM on its own. Dense-map usability and conversation growth remain follow-up trials.
+
+## Larger maps and independent resumption — issue 09
+
+See [the complete baseline and trial record](large-map-baseline.md). The 500-node browser test demonstrated and fixed clipped fitting. Search-to-focus, full overview, connected dragging with reload persistence, keyboard search, mobile spacing, and light/dark search were verified. All 20 automated tests and static prototype checks passed; snapshot hashes remain unchanged.
+
+A fresh agent authorized by the owner reconstructed a real saved implementation investigation without this conversation and recovered an omitted fixture answer through linked Markdown. The linked document itself added 43,563 characters; this is evidence that packet caps do not bound every read. Owner-led usability and actual long-session host context usage remain unvalidated. The tests used an isolated workspace and did not claim or answer work in the owner's original map.
+
+After owner review, compact local placement replaced radial spacing that grew with map size. The map opens around the root; clicking centers a node and frames its immediate neighbors, with parent/child links in the inspector. Browser checks confirmed desktop/mobile neighbor visibility and persistent dragging without camera movement. All 21 tests passed, including a dense-layout geometry regression; static snapshot checks remain unchanged. The owner accepted continuing. Issue 09 is resolved; completed-branch semantics are issue 10, while actual long-session host usage and targeted reads remain issue 11.
+
+## Completed branches and targeted retrieval — issues 10 and 11
+
+All 25 automated tests passed using `node --test tests/*.test.mjs`. JavaScript syntax and static prototype checks passed; both standalone hashes remain unchanged. No production dependencies were added. Both local servers were started with the updated backend, and their browser tabs were reopened without discarding unsaved form edits.
+
+Issue 10 is resolved:
+
+- Store/CLI tests reject restarting a completed node and bypasses through cancellation, old answers, direct revision, and replacement results. They preserve the original premise, findings, evidence, and questions when creating a changed-premise child.
+- `fork-revision` adds an inactive child and marks affected completed findings stale. Existing unfinished question/answer and interrupted retry checks continue to pass.
+- Format-1 completion is inferred for older maps. Recovery stops historical repeat work while retaining node content and job history. This compatibility path is tested with a legacy active repeat; no user-map repeat jobs were found during the server restart inspection.
+- In isolated QA map `map-445eb359`, the browser showed a completed root with no **Explore further** action. **Explore a changed premise** created a gray, inactive child and a needs-review marker on the preserved root. Explicit activation queued only the child; its CLI result completed it independently. The original summary and findings stayed intact, and the other suggested child remained inactive. Neither finding was accepted as an owner decision.
+
+Issue 11's implemented retrieval and measurement work:
+
+- `read --node` defaults to a summary, with paged premise/findings/questions/sources/relationships sections. Text queries and question IDs narrow retrieval. Continuing requires the same revision; tests reject mixed-version pages and reconstruct long Unicode/escaped text exactly. Read responses cap formatted JSON at 8,000 characters, with a default 4,000-character raw excerpt.
+- A public CLI query for `Fixture question 1:` in the earlier 19-answer fixture returned one complete question/answer in 2,234 output characters. The previous fresh agent read 43,563 raw characters for the whole node. This is roughly 95% less character input for that lookup, not a vendor-token comparison. The answer remains explicitly synthetic.
+- Successful operational CLI commands now log only command/map identifiers, timestamp, stdout characters, and UTF-8 bytes. `usage` reports these counts and their exclusions. No credentials, answers, or result bodies are logged.
+- The actual two-step issue-10 implementation investigation recorded six CLI outputs: creation 76 characters, two packets 3,309, two result acknowledgements 208, and one targeted findings read 687. Total: 4,280 characters / 4,290 UTF-8 bytes. Browser observations, code/test reads, model-generated text, and other tools are not included.
+
+The long real-session/host context criterion remains open. This environment provides account-wide usage limits rather than an attributable active-context/token counter, so no host token total or compaction behavior is asserted. The shorter actual investigation and synthetic retrieval checks do not substitute for that longer trial. The updated targeted path was tested with new CLI processes; no second fresh-model agent trial was performed.

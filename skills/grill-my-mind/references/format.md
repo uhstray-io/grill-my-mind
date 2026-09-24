@@ -15,6 +15,7 @@ The JSON snapshot is the only source of truth. Markdown files are readable proje
 Nodes contain `id`, `title`, `kind`, `parentId`, `prompt`, `summary`, `body`, `status`, `reviewState`, `contentRevision`, `questions`, `sources`, and `stale`. Questions retain answers and answer timestamps. Sources retain an HTTP(S) URL, descriptive title, the supported/challenged proposition, and retrieval timestamp.
 
 - Work states: `suggested`, `queued`, `running`, `awaiting-answer`, `explored`, `interrupted`.
+- `explored` is terminal for that branch. New terminal results record optional `completedAt`; older snapshots infer completion from explored state or a successful terminal job. A changed-premise child optionally records `revises` referencing its earlier investigation. These additive fields do not change schema version 1. Public responses expose derived `completed` for UI behavior.
 - Review states: `unreviewed`, `accepted`. Staleness is separate from review; a previously accepted finding can need review after a premise changes.
 - Graph edges: `contains`, `depends_on`, `supports`, `contradicts`, `related_to`. A visual parent is not an evidence relationship. Dependency links inform context and staleness; they do not automatically activate/schedule other nodes.
 - Jobs retain their input-context fingerprint, visible results, worker name, timing and packet character count. A late result whose relevant context changed is retained for review instead of replacing the current premise.
@@ -26,4 +27,4 @@ Machine-local connection tokens, process locks, result drafts, and claim-deliver
 
 ## Reading procedure
 
-Read the map overview, then the selected node and related evidence. Check status and staleness before treating a finding as accepted knowledge. Use the CLI `read` command or linked node files instead of loading the whole snapshot into an agent's context.
+Read the map overview, then the selected node and related evidence. Check status and staleness before treating a finding as accepted knowledge. Prefer the CLI's bounded section reads with question IDs or a query, continuing only necessary pages at the same revision. Linked node Markdown remains a fallback; avoid loading a long history to answer one targeted question. Never load the whole snapshot merely to resume an investigation.

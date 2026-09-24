@@ -141,3 +141,41 @@ test('large relevant content is bounded and reports omissions', async () => {
   assert.ok(packet.omittedQuestions > 0); assert.ok(packet.omittedSources > 0);
   assert.match(packet.selected.premise, /Shortened/);
 });
+
+test('completed branches reject repeat exploration and bypasses; changed premises grow inactive children', async () => {
+  const { store, map } = await fixture();
+  const job = await store.claim('test');
+  const completed = await store.complete(map.id, job.jobId, job.claimKey, result({ sources: [{ title: 'Evidence', url: 'https://example.org', note: 'Fixture source.' }] }));
+  const original = structuredClone(completed.nodes[0]);
+  for (const type of ['activate', 'cancel', 'answer', 'revise']) {
+    await assert.rejects(action(store, map.id, map.rootId, type, { body: 'Changed premise' }), error => error.status === 409);
+    assert.deepEqual(await store.get(map.id), completed);
+  }
+  let forked = await action(store, map.id, map.rootId, 'fork-revision', { body: 'The revised scope is different.' });
+  const child = forked.nodes[1];
+  assert.equal(child.status, 'suggested'); assert.equal(child.revises, map.rootId);
+  assert.equal(await store.claim('test'), null);
+  for (const field of ['body', 'prompt', 'summary', 'sources', 'questions', 'completedAt']) assert.deepEqual(forked.nodes[0][field], original[field]);
+  assert.equal(forked.nodes[0].stale, true);
+  await assert.rejects(action(store, map.id, map.rootId, 'activate'), error => error.status === 409);
+  await action(store, map.id, child.id, 'activate');
+  const next = await store.claim('test'); assert.equal(next.selected.id, child.id);
+  forked = await store.complete(map.id, next.jobId, next.claimKey, result());
+  assert.equal(forked.nodes[0].body, original.body); assert.equal(forked.nodes[1].status, 'explored');
+});
+
+test('legacy queued and running repeat jobs stop on restart without discarding historical content', async () => {
+  const { store, map } = await fixture(); const job = await store.claim('one');
+  const saved = await store.complete(map.id, job.jobId, job.claimKey, result());
+  delete saved.nodes[0].completedAt;
+  const original = structuredClone(saved.nodes[0]);
+  saved.nodes[0].status = 'running';
+  saved.jobs.push({ id: 'job-legacy', nodeId: map.rootId, status: 'running', claimKey: 'fixture-key' });
+  await store.save(saved);
+  await new Store(store.directory).recover();
+  const reopened = await store.get(map.id);
+  assert.equal(reopened.nodes[0].status, 'explored'); assert.equal(reopened.nodes[0].body, original.body);
+  assert.equal(reopened.jobs[0].status, 'completed'); assert.equal(reopened.jobs[1].status, 'cancelled');
+  assert.equal(await store.claim('two'), null);
+  await assert.rejects(store.complete(map.id, 'job-legacy', 'fixture-key', result()), error => error.status === 409);
+});

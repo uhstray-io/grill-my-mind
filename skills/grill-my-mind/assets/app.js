@@ -1,4 +1,4 @@
-import { constellationLayout, connectionPath, presentation, workLabels } from './graph.js';
+import { constellationLayout, connectionPath, presentation, workLabels, overviewView, focusedView } from './graph.js';
 const $ = selector => document.querySelector(selector);
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const state = { token: '', map: null, maps: [], selected: null, bridge: {}, scale: 1, x: 0, y: 0, positions: {}, drafts: {}, refreshing: false };
@@ -57,17 +57,28 @@ async function openMap(id) {
   try {
     const map = await api(`/maps/${id}`); if (version !== openVersion) return;
     state.map = map; state.selected = state.map.rootId; navigation(false);
+    $('#find-node').value = ''; $('#node-results').hidden = true;
     localStorage.setItem('grill-my-mind-map', id); location.hash = id;
     renderMap(true); renderRail();
   } catch (error) { toast(error.message); }
 }
 function layout() {
-  const result = constellationLayout(state.map); state.positions = result.positions; state.domains = result.domains;
+  const key = JSON.stringify([state.map.id, state.map.nodes.map(n => [n.id, n.parentId])]);
+  if (state.graphKey !== key) {
+    state.graphKey = key;
+    state.baseGraph = constellationLayout({ ...state.map, view: null });
+  }
+  state.positions = { ...state.baseGraph.positions }; state.domains = state.baseGraph.domains;
+  for (const node of state.map.nodes) {
+    const saved = state.map.view?.positions?.[node.id];
+    if (saved && Number.isFinite(saved.x) && Number.isFinite(saved.y)) state.positions[node.id] = { ...saved };
+  }
 }
 function renderEdges() {
+  const nodes = new Map(state.map.nodes.map(node => [node.id, node]));
   $('#edges').innerHTML = state.map.edges.map(e => {
     const a = state.positions[e.from], b = state.positions[e.to]; if (!a || !b) return '';
-    const target = state.map.nodes.find(n => n.id === e.to);
+    const target = nodes.get(e.to);
     return `<path class="edge ${e.type === 'contains' ? '' : 'semantic'} ${presentation(target).lit ? 'lit' : ''}" style="--accent:${accents[state.domains[e.to] % accents.length]}" d="${connectionPath(a, b)}"><title>${esc(e.type.replaceAll('_', ' '))}</title></path>`;
   }).join('');
 }
@@ -87,20 +98,22 @@ function renderMap(fit = false) {
   }).join('');
   renderEdges();
   if (!$('#detail').contains(document.activeElement) || !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) renderDetail();
-  connectionView(); if (fit || topologyChanged) requestAnimationFrame(fitMap); else transform();
+  connectionView();
+  if (fit || topologyChanged) requestAnimationFrame(() => { if (fit || !state.overview) centerSelected(); else fitMap(); });
+  else transform();
 }
-function transform() { $('#world').style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`; $('#zoom-value').textContent = `${Math.round(state.scale * 100)}%`; }
+function transform() { $('#world').style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`; $('#world').style.setProperty('--graph-scale', state.scale); $('#zoom-value').textContent = `${state.scale < .1 ? (state.scale * 100).toFixed(1) : Math.round(state.scale * 100)}%`; }
+function viewport() { return { width: $('#canvas').clientWidth, height: $('#canvas').clientHeight }; }
 function fitMap() {
   if (!state.map) return;
-  const p = Object.values(state.positions); const minX = Math.min(...p.map(p => p.x)) - 115, minY = Math.min(...p.map(p => p.y)) - 60;
-  const width = Math.max(...p.map(p => p.x)) + 115 - minX, height = Math.max(...p.map(p => p.y)) + 110 - minY;
-  const canvas = $('#canvas'); state.scale = Math.max(.05, Math.min(1.15, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 40) / height));
-  state.x = (canvas.clientWidth - width * state.scale) / 2 - minX * state.scale;
-  state.y = (canvas.clientHeight - height * state.scale) / 2 - minY * state.scale;
+  state.overview = true;
+  Object.assign(state, overviewView(state.positions, viewport()));
   transform();
 }
 function zoom(factor, cx = $('#canvas').clientWidth / 2, cy = $('#canvas').clientHeight / 2) {
-  const next = Math.max(.05, Math.min(3, state.scale * factor)); const ratio = next / state.scale;
+  state.overview = false;
+  const minimum = Math.min(.05, overviewView(state.positions, viewport()).scale);
+  const next = Math.max(minimum, Math.min(3, state.scale * factor)); const ratio = next / state.scale;
   state.x = cx - (cx - state.x) * ratio; state.y = cy - (cy - state.y) * ratio; state.scale = next; transform();
 }
 function selectNode(nodeId) {
@@ -108,27 +121,62 @@ function selectNode(nodeId) {
   for (const card of document.querySelectorAll('.node')) { card.classList.toggle('selected', card.dataset.node === nodeId); card.setAttribute('aria-pressed', String(card.dataset.node === nodeId)); }
   renderDetail();
 }
+function focusNode(nodeId) {
+  if (!state.positions[nodeId]) return;
+  selectNode(nodeId);
+  centerSelected();
+  $('#node-results').hidden = true;
+  $(`[data-node="${nodeId}"]`)?.focus({ preventScroll: true });
+}
+function centerSelected() {
+  const node = state.map?.nodes.find(n => n.id === state.selected);
+  if (!node) return;
+  const neighbors = state.map.nodes.filter(n => n.parentId === node.id || n.id === node.parentId).map(n => state.positions[n.id]);
+  state.overview = false;
+  Object.assign(state, focusedView(state.positions[node.id], viewport(), 1, neighbors)); transform();
+}
+function searchNodes() {
+  if (!state.map) return;
+  const query = $('#find-node').value.trim().toLowerCase();
+  const matches = state.map.nodes.filter(node => node.title.toLowerCase().includes(query));
+  $('#node-results').innerHTML = `<p role="status">${matches.length ? `${matches.length} ${matches.length === 1 ? 'idea' : 'ideas'}${matches.length > 12 ? ' · showing 12, type more to narrow' : ''}` : 'No matching ideas'}</p>` + matches.slice(0, 12).map(node => `<button type="button" data-focus-node="${node.id}"><strong>${esc(node.title)}</strong><small>${esc(presentation(node).label)}</small></button>`).join('');
+  $('#node-results').hidden = false;
+}
+$('#find-node').addEventListener('input', searchNodes);
+$('#find-node').addEventListener('focus', searchNodes);
+$('#find-node').addEventListener('keydown', event => {
+  if (event.key === 'Escape') { event.preventDefault(); $('#node-results').hidden = true; }
+  if (event.key === 'ArrowDown') { event.preventDefault(); $('#node-results button')?.focus(); }
+  if (event.key === 'Enter') { event.preventDefault(); const id = $('#node-results button')?.dataset.focusNode; if (id && !$('#node-results').hidden) focusNode(id); }
+});
+$('#node-finder').addEventListener('focusout', event => { if (!event.currentTarget.contains(event.relatedTarget)) $('#node-results').hidden = true; });
+$('#node-finder').addEventListener('keydown', event => { if (event.key === 'Escape') { $('#find-node').focus(); $('#node-results').hidden = true; } });
+$('#focus-selected').addEventListener('click', () => focusNode(state.selected));
 function renderDetail() {
   const n = state.map.nodes.find(n => n.id === state.selected);
   if (!n) { $('#detail').innerHTML = '<div class="detail-empty"><span>◇</span>Select an idea to look closer.</div>'; return; }
+  const completed = n.completed || n.status === 'explored';
   const pending = ['suggested', 'queued', 'running', 'awaiting-answer', 'interrupted'].includes(n.status);
   const job = state.map.jobs.filter(j => j.nodeId === n.id).at(-1);
   const related = state.map.edges.filter(e => e.type !== 'contains' && (e.from === n.id || e.to === n.id));
-  const questionHtml = n.questions.map(q => q.answer ? `<div class="answer"><strong>${esc(q.text)}</strong>${esc(q.answer)}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] || '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
+  const nearby = state.map.nodes.filter(node => node.id === n.parentId || node.parentId === n.id);
+  const questionHtml = n.questions.map(q => q.answer || completed ? `<div class="answer"><strong>${esc(q.text)}</strong>${q.answer ? esc(q.answer) : 'Unanswered historical question. Add a new direction to investigate it.'}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] || '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
   $('#detail').innerHTML = `<div class="detail-kind"><span class="kind-tag"><b aria-hidden="true">${glyphs[n.kind]}</b>${n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><span class="status-label ${pending ? 'pending' : ''}">${esc(presentation(n).label)}</span></div><h2>${esc(n.title)}</h2><p class="detail-summary">${esc(n.summary)}</p>
     ${n.stale ? '<p class="state-note warning">An earlier premise changed. These findings need another look before you rely on them.</p>' : ''}
+    ${completed ? '<p class="state-note">This branch is complete. Add a new direction to keep exploring; these findings stay here.</p>' : ''}
     ${n.status === 'suggested' ? '<p class="state-note">A possible direction. Nothing runs until you choose to explore it.</p>' : ''}
     ${n.status === 'queued' ? `<p class="state-note">${state.bridge.listening ? 'Your agent will pick up this branch next.' : 'Saved in the queue. Connect your agent to start this investigation.'}</p>` : ''}
     ${n.status === 'running' ? '<p class="state-note">Your agent is exploring this direction. New questions and findings will appear here.</p>' : ''}
     ${job?.error ? `<p class="state-note warning">${esc(job.error)}</p>` : ''}
-    <div class="detail-actions">${['suggested', 'interrupted', 'explored'].includes(n.status) ? `<button class="primary" data-explore="${n.id}">${n.status === 'suggested' ? 'Explore this branch' : n.status === 'interrupted' ? 'Retry exploration' : 'Explore further'}</button>` : ''}${['queued', 'running'].includes(n.status) ? `<button class="secondary" data-cancel="${n.id}">Stop exploration</button>` : ''}${n.status === 'explored' && n.reviewState !== 'accepted' && !n.stale ? `<button class="secondary" data-accept="${n.id}">Accept finding</button>` : ''}</div>
+    <div class="detail-actions">${!completed && ['suggested', 'interrupted'].includes(n.status) ? `<button class="primary" data-explore="${n.id}">${n.status === 'suggested' ? 'Explore this branch' : 'Retry exploration'}</button>` : ''}${!completed && ['queued', 'running'].includes(n.status) ? `<button class="secondary" data-cancel="${n.id}">Stop exploration</button>` : ''}${n.status === 'explored' && n.reviewState !== 'accepted' && !n.stale ? `<button class="secondary" data-accept="${n.id}">Accept finding</button>` : ''}</div>
     ${questionHtml}
+    ${nearby.length ? `<h3 class="section-label">Nearby ideas</h3>${nearby.slice(0, 12).map(node => `<button class="relationship" data-select="${node.id}">${node.id === n.parentId ? 'Back to parent' : esc(presentation(node).label)}<strong>${esc(node.title)}</strong></button>`).join('')}${nearby.length > 12 ? '<p class="form-note">More directions are available through Find an idea.</p>' : ''}` : ''}
     ${n.body && n.body !== n.summary ? `<h3 class="section-label">${n.status === 'suggested' ? 'What to explore' : 'Notes & findings'}</h3><div class="prose">${prose(n.body)}</div>` : ''}
     ${job?.stale && job.result ? `<h3 class="section-label">Result from the earlier premise</h3><div class="prose">${prose(job.result.body)}</div>` : ''}
     ${n.sources.length ? `<h3 class="section-label">Sources & evidence</h3>${n.sources.map(s => `<a class="evidence-link" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title)} <span aria-hidden="true">↗</span><small>${esc(s.note)}</small></a>`).join('')}` : ''}
     ${related.length ? `<h3 class="section-label">Connected thinking</h3>${related.map(e => { const target = state.map.nodes.find(node => node.id === (e.from === n.id ? e.to : e.from)); return `<button class="relationship" data-select="${target.id}">${esc(e.type.replaceAll('_', ' '))}<strong>${esc(target.title)}</strong></button>`; }).join('')}` : ''}
     <details><summary>Add a direction</summary><form id="suggest-form" data-node-id="${n.id}"><label for="branch-title">What's worth exploring?</label><input id="branch-title" name="title" maxlength="100" data-draft="${n.id}-title" value="${esc(state.drafts[`${n.id}-title`] || '')}" required><label for="branch-body">A little context</label><textarea id="branch-body" name="body" rows="3" maxlength="4000" data-draft="${n.id}-branch">${esc(state.drafts[`${n.id}-branch`] || '')}</textarea><button type="submit" class="secondary">Add suggested branch</button></form></details>
-    <details><summary>Revise this premise</summary><form id="revise-form" data-node-id="${n.id}"><label for="revised-body">What changed?</label><textarea id="revised-body" name="body" rows="5" maxlength="16000" required data-draft="${n.id}-revision">${esc(state.drafts[`${n.id}-revision`] || n.prompt || n.body)}</textarea><p class="form-note">Dependent findings will be marked for review. Research won't restart automatically.</p><button type="submit" class="secondary">Save revised premise</button></form></details>
+    <details><summary>${completed ? 'Explore a changed premise' : 'Revise this premise'}</summary><form id="revise-form" data-completed="${completed}" data-node-id="${n.id}"><label for="revised-body">What changed?</label><textarea id="revised-body" name="body" rows="5" maxlength="16000" required data-draft="${n.id}-revision">${esc(state.drafts[`${n.id}-revision`] || n.prompt || n.body)}</textarea><p class="form-note">${completed ? 'Creates a new inactive branch and flags affected findings for review. The original premise and evidence are preserved.' : "Dependent findings will be marked for review. Research won't restart automatically."}</p><button type="submit" class="secondary">${completed ? 'Add changed-premise branch' : 'Save revised premise'}</button></form></details>
     ${job?.contextCharacters ? `<p class="run-note">Last investigation used ${job.contextCharacters.toLocaleString()} characters of map context. Only relevant context is sent.</p>` : ''}`;
 }
 function act(nodeId, type, extra = {}) {
@@ -175,12 +223,14 @@ $('#open-example').addEventListener('click', async event => {
 document.addEventListener('click', async event => {
   if (suppressClick) { suppressClick = false; return; }
   const map = event.target.closest('[data-map]'); if (map) return openMap(map.dataset.map);
-  const select = event.target.closest('[data-select]'); if (select) return selectNode(select.dataset.select);
+  if (!event.target.closest('#node-finder')) $('#node-results').hidden = true;
+  const focus = event.target.closest('[data-focus-node]'); if (focus) return focusNode(focus.dataset.focusNode);
+  const select = event.target.closest('[data-select]'); if (select) return focusNode(select.dataset.select);
   for (const [attribute, action, message] of [['explore', 'activate', 'Exploration queued.'], ['cancel', 'cancel', 'Cancelled. An active agent may finish its current step.'], ['accept', 'accept', 'Finding accepted.']]) {
     const button = event.target.closest(`[data-${attribute}]`);
     if (button) { button.disabled = true; if (await act(button.dataset[attribute], action)) toast(message); button.disabled = false; return; }
   }
-  const card = event.target.closest('.node'); if (card) selectNode(card.dataset.node);
+  const card = event.target.closest('.node'); if (card) focusNode(card.dataset.node);
 });
 $('#detail').addEventListener('input', event => { if (event.target.dataset.draft) state.drafts[event.target.dataset.draft] = event.target.value; });
 $('#detail').addEventListener('submit', async event => {
@@ -189,7 +239,7 @@ $('#detail').addEventListener('submit', async event => {
   let success = false;
   if (form.dataset.question) success = await act(node, 'answer', { questionId: form.dataset.question, answer: data.answer });
   if (form.id === 'suggest-form') success = await act(node, 'suggest', { title: data.title, body: data.body.trim() || data.title });
-  if (form.id === 'revise-form') success = await act(node, 'revise', data);
+  if (form.id === 'revise-form') success = await act(node, form.dataset.completed === 'true' ? 'fork-revision' : 'revise', data);
   if (success) { for (const field of form.querySelectorAll('[data-draft]')) delete state.drafts[field.dataset.draft]; renderDetail(); toast(form.dataset.question ? 'Answer saved. Your branch will continue.' : 'Saved to your map.'); }
   button.disabled = false;
 });
@@ -218,10 +268,13 @@ async function finishGesture(event) {
   if (finished.moved) { suppressClick = true; setTimeout(() => { suppressClick = false; }, 100); }
   if (event.type !== 'pointerup') { renderMap(); return; }
   if (finished.nodeId) {
-    selectNode(finished.nodeId);
     if (finished.moved) {
+      selectNode(finished.nodeId);
       $('#saved-state').textContent = 'Saving position…';
       await act(finished.nodeId, 'position', { ...state.positions[finished.nodeId] });
+    } else {
+      suppressClick = true; setTimeout(() => { suppressClick = false; }, 100);
+      focusNode(finished.nodeId);
     }
   }
 }
@@ -235,7 +288,7 @@ $('#nodes').addEventListener('keydown', async event => {
   const y = pos.y + (event.key === 'ArrowUp' ? -24 : event.key === 'ArrowDown' ? 24 : 0);
   selectNode(id); await act(id, 'position', { x, y }); $(`[data-node="${id}"]`)?.focus();
 });
-window.addEventListener('resize', () => { if (state.map) fitMap(); });
+window.addEventListener('resize', () => { if (state.map) { if (state.overview) fitMap(); else centerSelected(); } });
 window.addEventListener('hashchange', () => { const id = location.hash.slice(1); if (id && id !== state.map?.id) openMap(id); else if (!id) showWelcome(); });
 try {
   const session = await (await fetch('/api/session')).json(); state.token = session.token;

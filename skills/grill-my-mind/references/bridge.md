@@ -10,6 +10,9 @@ node scripts/cli.mjs next --wait 25 --worker codex --workspace <repo>
 node scripts/cli.mjs result --job <job-id> --file <result.json> --workspace <repo>
 node scripts/cli.mjs fail --job <job-id> --reason "What prevented completion" --workspace <repo>
 node scripts/cli.mjs read --map <map-id> [--node <node-id>] --workspace <repo>
+node scripts/cli.mjs read --map <map-id> --node <node-id> --section questions --query "early constraint" --workspace <repo>
+node scripts/cli.mjs read --map <map-id> --node <node-id> --section findings --offset <nextOffset> --revision <revision> --workspace <repo>
+node scripts/cli.mjs usage [--map <map-id>] --workspace <repo>
 node scripts/cli.mjs act --map <map-id> --file <action.json> --workspace <repo>
 ```
 
@@ -44,15 +47,22 @@ Limits: summary 800 characters; body 24,000; at most 5 questions, 8 suggestions,
 
 An action carries `expectedRevision`, `nodeId`, and `type`. Use the current revision returned by `read`. On a conflict, re-read before deciding whether the action still applies; do not blindly overwrite.
 
-- `activate`: queue a suggested/retry/further investigation. Only on the user's explicit request, normally via the UI.
+- `activate`: queue a suggested branch or retry unfinished work. Completed branches reject activation. Only on the user's explicit request, normally via the UI.
 - `answer`: `questionId`, `answer`. Supply only an actual user answer.
 - `suggest`: `title`, `body`. Adds an inactive research direction.
-- `revise`: `body`. Records a changed premise and marks dependent findings for review.
+- `revise`: `body`. Revises unfinished work and marks dependent findings for review. Completed branches reject direct revision.
+- `fork-revision`: `body`, optional `title`. For a completed branch, create an inactive child with the changed premise. Preserve the original premise, findings, evidence, and review history; flag affected findings for review. Activate the child separately. The child records `revises` pointing to its earlier investigation.
 - `accept`: user accepts a current finding. Never self-accept a model conclusion.
 - `cancel`: stops queued work or rejects subsequent results from the claimed run. The agent should also stop its actual investigation; this API cannot kill host-owned subagents.
 - `position`: `x`, `y`. Presentation only.
 
-`read` without a node is bounded to 40 node summaries. Reading a selected node returns its detail. For very large detail, use the generated Markdown file and targeted reads. No additional provider connection is required to open a saved map.
+`read` without a node returns at most 40 node summaries. `read --node ID` now defaults to a bounded summary. Add `--section premise|findings|questions|sources|relationships` for detail. `--query TEXT` filters records case-insensitively; `--question ID` selects one question record. Question IDs appear in work packets. Empty search results are explicit. Findings/premise are single text records; query filters the record rather than extracting surrounding sentences.
+
+Each section response includes `excerpt`, total/matching record counts, `totalCharacters`, `offset`, `nextOffset`, and `revision`. Default raw-text limit is 4,000 characters; `--limit` accepts 1–6,000. Formatted JSON is capped at 8,000 characters even with escaped text. Continue only if needed, passing `--offset <nextOffset> --revision <revision>` with the same section/query/question. A changed map rejects continuation, preventing silent mixing of versions. Offsets count JavaScript UTF-16 code units, not UTF-8 bytes or model tokens.
+
+Successful CLI commands append content-free counts to `.grill-my-mind/context-usage.jsonl`. `usage [--map ID]` sums recorded stdout characters and UTF-8 bytes, including formatting and its newline, by command. It excludes its own reports, failed commands, direct file reads, browser observations, research tools, model replies, and host compaction. It does not measure vendor token use or active context. No credentials or excerpts are stored in the log.
+
+No additional provider connection is required to open a saved map. Existing format-1 snapshots remain readable. On restart, historical repeat jobs on already completed branches are cancelled while stored content and job history are retained; unfinished investigations remain retryable.
 
 ## Process lifetime
 
