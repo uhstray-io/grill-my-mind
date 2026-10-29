@@ -34,6 +34,8 @@ Research synthesis: [persistent exploration workspace proposal](../../docs/resea
 - Issues 01–09 are resolved. [Issue 09](issues/09-large-map-trial.md) includes owner feedback, compact navigation refinements, and an independent resumption trial; actual long-session host context remains unmeasured.
 - [Issue 10, keep explored branches complete and grow new directions](issues/10-completed-branches.md) is resolved. UI and command guards preserve completed findings; changed premises create inactive child investigations.
 - [Issue 11, long-session context and targeted linked-document retrieval](issues/11-context-growth.md) is in progress. Targeted reads and CLI output measurements are implemented and verified; actual long-session host context and compaction remain unmeasured. Live Claude Code/Copilot trials remain a later candidate.
+- [Track map growth and replay its history](issues/12-map-growth-history.md) has an additions-only implementation on the review branch; visual owner acceptance remains pending.
+- [Make exploration easier to navigate, resume, and review](issues/13-exploration-workspace.md) records the 2026-10-29 improvement initiative on `codex/exploration-workspace`. Start with its [review guide](../../docs/review-guide.md) and [verification record](../../docs/iterations/2026-10-29.md).
 
 ## Not yet specified
 

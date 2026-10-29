@@ -1,5 +1,7 @@
 # MVP verification
 
+Latest review-branch evidence: [29 October 2026 iteration record](iterations/2026-10-29.md) — 64 automated tests passed, independent technical/nontechnical exploration and fresh resumption, with explicit browser/host limits. The earlier dated records below describe previous versions.
+
 The first MVP was checked locally with Node.js 24.15.0 on Windows. No provider SDK or package installation was needed for the application.
 
 ## Automated checks

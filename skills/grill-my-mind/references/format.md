@@ -23,6 +23,14 @@ Nodes contain `id`, `title`, `kind`, `parentId`, `prompt`, `summary`, `body`, `s
 
 The server serializes mutations and writes/syncs a temporary snapshot before replacing `map.json`. Interrupted temporary files are not read as committed snapshots. This is a local single-writer MVP, not a multi-device synchronization system or a guarantee against every filesystem/power-loss failure. Generated Markdown is not part of the authoritative transaction.
 
+## Growth history
+
+Optional schema-1 `growth: { version: 1, batches: [...] }` records graph additions. Each batch has a strictly increasing `sequence`, an ISO `at` timestamp, `nodeIds`, and `edges` containing `{ from, to, type }` identities. One graph-adding transaction produces one batch, including an edge-only result; its new nodes and edges share that timestamp in `createdAt`. Sequence preserves transaction order when timestamps tie or the clock moves backward. Duplicate suggestions, connections and result deliveries do not add duplicate history. The ledger and graph commit in the same canonical snapshot. Work changes, answers, findings, review and layout do not create growth batches, and routine context packets omit the ledger.
+
+The browser's shared `history.js` provides pure `growthTimeline(map)` and `mapAtGrowthStep(map, index)` functions. Steps contain cumulative node IDs/counts and connection counts, the additions at that boundary, `at`, and `kind` (`recorded`, `dated`, or `unknown`). The first step is the earliest available addition group, and `latestStep` is the final index (`-1` for an empty graph). Projection returns a detached copy, filtering only graph membership. It uses **today's findings, statuses and layout**, and does not reconstruct historical content or work states. Browsing is read-only and never queues work or changes the saved view.
+
+Older maps are readable without migration or writes. Their available `createdAt` dates form deterministic date groups before recorded batches; equal dates form one group. Missing or invalid dates remain unknown. An undated connection is never assigned its endpoints' dates. Unknown additions appear in a final explicitly undated step, which does not assert when they happened. Connections with dates inconsistent with their endpoints also appear in that step; no connection appears before both endpoints. `incomplete`, `unknownNodeCount`, and `unknownEdgeCount` expose these limits. This is a view of known additions, not a claim to exact historical snapshots. First recording a new batch leaves legacy timestamps and connections untouched.
+
 Machine-local connection tokens, process locks, result drafts, and claim-delivery files live under `.grill-my-mind/`, which should be ignored by Git. No model API key is part of a map. A provider's original chat history or conversation ID is not necessary to read/continue the map. Share saved maps deliberately: they contain the user's actual ideas and answers.
 
 ## Reading procedure

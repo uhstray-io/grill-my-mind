@@ -13,6 +13,10 @@ export class Problem extends Error {
   constructor(message, status = 400) { super(message); this.status = status; }
 }
 function need(condition, message, status) { if (!condition) throw new Problem(message, status); }
+function object(value, field) {
+  need(value && typeof value === 'object' && !Array.isArray(value), `${field} must be an object.`);
+  return value;
+}
 function text(value, field, max = 12000, optional = false) {
   if (optional && value === undefined) return '';
   need(typeof value === 'string' && value.trim().length > 0, `${field} is required.`);
@@ -94,6 +98,23 @@ export class Store {
     await writeFile(path.join(dir, 'README.md'), overview.join('\n') + '\n');
   }
   event(map, type, nodeId, detail = '') { map.history.push({ at: now(), type, nodeId, detail }); }
+  recordGrowth(map, nodes = [], edges = []) {
+    if (!nodes.length && !edges.length) return;
+    need(!map.growth || (map.growth.version === 1 && Array.isArray(map.growth.batches)), 'This map uses an unsupported growth history format.', 409);
+    const growth = map.growth || { version: 1, batches: [] };
+    const edgeKey = edge => JSON.stringify([edge.from, edge.to, edge.type]);
+    const knownNodes = new Set(growth.batches.flatMap(batch => batch.nodeIds || []));
+    const knownEdges = new Set(growth.batches.flatMap(batch => batch.edges || []).map(edgeKey));
+    const addedNodes = nodes.filter(node => { if (knownNodes.has(node.id)) return false; knownNodes.add(node.id); return true; });
+    const addedEdges = edges.filter(edge => { const key = edgeKey(edge); if (knownEdges.has(key)) return false; knownEdges.add(key); return true; });
+    if (!addedNodes.length && !addedEdges.length) return;
+    const at = now();
+    const sequence = growth.batches.reduce((last, batch) => Number.isSafeInteger(batch.sequence) ? Math.max(last, batch.sequence) : last, 0) + 1;
+    for (const node of addedNodes) node.createdAt = at;
+    for (const edge of addedEdges) edge.createdAt = at;
+    growth.batches.push({ sequence, at, nodeIds: addedNodes.map(node => node.id), edges: addedEdges.map(({ from, to, type }) => ({ from, to, type })) });
+    map.growth = growth;
+  }
   enqueue(map, node, reason) {
     need(!isCompleted(map, node), 'This branch is complete. Add a new direction instead.', 409);
     const existing = map.jobs.find(j => j.nodeId === node.id && ['queued', 'running'].includes(j.status));
@@ -109,11 +130,13 @@ export class Store {
   }
   create(input) {
     return this.serial(async () => {
+      object(input, 'Input');
       const title = text(input.title, 'Title', 100);
       const idea = text(input.idea, 'Idea', 16000);
       const root = this.node(title, idea, 'idea');
       const map = { schemaVersion: 1, id: id('map'), title, rootId: root.id, revision: 0,
         originalIdea: idea, createdAt: now(), updatedAt: now(), nodes: [root], edges: [], jobs: [], history: [], view: { positions: {} } };
+      this.recordGrowth(map, [root]);
       this.enqueue(map, root, 'User described a new idea. Identify useful directions and ask focused questions.');
       return this.save(map);
     });
@@ -132,12 +155,14 @@ export class Store {
       const map = { schemaVersion: 1, id: id('map'), title: 'An app that works offline', rootId: root.id, revision: 0, demo: true,
         createdAt: now(), updatedAt: now(), nodes, edges: nodes.slice(1).map(n => ({ from: n.parentId, to: n.id, type: 'contains' })),
         jobs: [], history: [], view: { positions: {} } };
+      this.recordGrowth(map, nodes, map.edges);
       this.event(map, 'example-created', root.id, 'Illustrative content, not agent research.');
       return this.save(map);
     });
   }
   action(mapId, input) {
     return this.serial(async () => {
+      object(input, 'Input');
       const map = await this.get(mapId);
       need(input.expectedRevision === map.revision, 'This map changed. Refresh and try again; your text has been kept.', 409);
       const n = map.nodes.find(node => node.id === input.nodeId);
@@ -158,7 +183,9 @@ export class Store {
         }
         case 'suggest': {
           const child = this.node(text(input.title, 'Title', 100), text(input.body, 'Direction', 4000), 'research', n.id);
-          map.nodes.push(child); map.edges.push({ from: n.id, to: child.id, type: 'contains' });
+          const edge = { from: n.id, to: child.id, type: 'contains' };
+          map.nodes.push(child); map.edges.push(edge);
+          this.recordGrowth(map, [child], [edge]);
           this.event(map, 'suggested', child.id, 'User added a direction; not yet activated.'); break;
         }
         case 'cancel':
@@ -206,7 +233,9 @@ export class Store {
             if (isCompleted(map, node)) node.stale = true;
             node.contentRevision++; // In-flight dependents must notice the changed assumption.
           }
-          map.nodes.push(child); map.edges.push({ from: n.id, to: child.id, type: 'contains' });
+          const edge = { from: n.id, to: child.id, type: 'contains' };
+          map.nodes.push(child); map.edges.push(edge);
+          this.recordGrowth(map, [child], [edge]);
           this.event(map, 'revision-suggested', child.id, `Changed premise for ${n.id}; original findings preserved. Activate the new direction explicitly.`);
           break;
         }
@@ -280,13 +309,23 @@ export class Store {
     });
   }
   validateResult(result, map, node) {
-    need(result && typeof result === 'object', 'Result is required.');
+    object(result, 'Result');
     const list = (value, name, max) => { if (value === undefined) return []; need(Array.isArray(value) && value.length <= max, `${name} must be an array of at most ${max} items.`); return value; };
     return { summary: text(result.summary, 'Summary', 800), body: text(result.body, 'Findings', 24000),
-      questions: list(result.questions, 'Questions', 5).map(q => ({ id: id('q'), text: text(typeof q === 'string' ? q : q.text, 'Question', 1600), answer: null })),
-      suggestions: list(result.suggestions, 'Suggestions', 8).map(s => ({ title: text(s.title, 'Suggestion title', 100), body: text(s.body || s.summary, 'Suggestion detail', 4000), kind: kinds.has(s.kind) ? s.kind : 'research' })),
-      sources: list(result.sources, 'Sources', 20).map(s => ({ title: text(s.title, 'Source title', 200), url: safeUrl(s.url), note: text(s.note, 'Evidence note', 1500), retrievedAt: now() })),
-      links: list(result.links, 'Links', 12).map(e => { need(relations.has(e.type) && map.nodes.some(n => n.id === e.to) && e.to !== node.id, 'Invalid relationship.'); return { from: node.id, to: e.to, type: e.type }; }) };
+      questions: list(result.questions, 'Questions', 5).map(q => ({ id: id('q'), text: text(typeof q === 'string' ? q : object(q, 'Question').text, 'Question', 1600), answer: null })),
+      suggestions: list(result.suggestions, 'Suggestions', 8).map(s => {
+        object(s, 'Suggestion');
+        return { title: text(s.title, 'Suggestion title', 100), body: text(s.body || s.summary, 'Suggestion detail', 4000), kind: kinds.has(s.kind) ? s.kind : 'research' };
+      }),
+      sources: list(result.sources, 'Sources', 20).map(s => {
+        object(s, 'Source');
+        return { title: text(s.title, 'Source title', 200), url: safeUrl(s.url), note: text(s.note, 'Evidence note', 1500), retrievedAt: now() };
+      }),
+      links: list(result.links, 'Links', 12).map(e => {
+        object(e, 'Relationship');
+        need(relations.has(e.type) && map.nodes.some(n => n.id === e.to) && e.to !== node.id, 'Invalid relationship.');
+        return { from: node.id, to: e.to, type: e.type };
+      }) };
   }
   complete(mapId, jobId, claimKey, result) {
     return this.serial(async () => {
@@ -308,12 +347,19 @@ export class Store {
         n.questions.push(...normalized.questions); n.contentRevision++; n.stale = false; n.reviewState = 'unreviewed';
         n.status = normalized.questions.length ? 'awaiting-answer' : 'explored';
         if (n.status === 'explored') n.completedAt = now();
+        const addedNodes = [], addedEdges = [];
         for (const s of normalized.suggestions) {
           if (map.nodes.some(existing => existing.parentId === n.id && existing.title.toLowerCase() === s.title.toLowerCase())) continue;
           const child = this.node(s.title, s.body, s.kind, n.id);
-          map.nodes.push(child); map.edges.push({ from: n.id, to: child.id, type: 'contains' });
+          const edge = { from: n.id, to: child.id, type: 'contains' };
+          map.nodes.push(child); map.edges.push(edge);
+          addedNodes.push(child); addedEdges.push(edge);
         }
-        for (const edge of normalized.links) if (!map.edges.some(e => e.from === edge.from && e.to === edge.to && e.type === edge.type)) map.edges.push(edge);
+        for (const edge of normalized.links) if (!map.edges.some(e => e.from === edge.from && e.to === edge.to && e.type === edge.type)) {
+          const added = { ...edge };
+          map.edges.push(added); addedEdges.push(added);
+        }
+        this.recordGrowth(map, addedNodes, addedEdges);
         this.event(map, 'result', n.id, job.id);
       }
       return this.save(map);

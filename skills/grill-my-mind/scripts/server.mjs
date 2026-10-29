@@ -5,6 +5,7 @@ import { readFile, mkdir, open, unlink } from 'node:fs/promises';
 import { randomBytes } from 'node:crypto';
 import { Store, Problem, publicMap, atomicJson } from './store.mjs';
 import { contextExcerpt } from './context.mjs';
+import { mapBrief } from './brief.mjs';
 
 const assets = fileURLToPath(new URL('../assets/', import.meta.url));
 export async function startServer({ workspace = process.cwd(), port = 4317, dataDirectory } = {}) {
@@ -47,6 +48,8 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
       if (url.pathname.startsWith('/api/')) {
         if (req.headers.authorization !== `Bearer ${token}`) throw new Problem('Open the workspace again to reconnect.', 401);
         if (req.method === 'GET' && url.pathname === '/api/maps') return send(res, 200, { maps: await store.list(), bridge: { listening: Date.now() - lastSeen < 40000, worker } });
+        const briefRoute = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)\/brief$/);
+        if (req.method === 'GET' && briefRoute) return send(res, 200, mapBrief(await store.get(briefRoute[1]), url.searchParams.get('node')));
         const contextRoute = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)\/context$/);
         if (req.method === 'GET' && contextRoute) return send(res, 200, contextExcerpt(await store.get(contextRoute[1]), url.searchParams.get('node'), Object.fromEntries(url.searchParams)));
         const match = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)(?:\/(action|result|fail))?$/);
@@ -77,7 +80,7 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
         if (match?.[2] === 'fail') return send(res, 200, publicMap(await store.fail(match[1], body.jobId, body.claimKey, body.reason)));
         throw new Problem('Route not found.', 404);
       }
-      const names = { '/': 'index.html', '/app.js': 'app.js', '/graph.js': 'graph.js', '/style.css': 'style.css', '/constellation.css': 'constellation.css', '/favicon.svg': 'favicon.svg' };
+      const names = { '/': 'index.html', '/app.js': 'app.js', '/graph.js': 'graph.js', '/history.js': 'history.js', '/workspace-view.js': 'workspace-view.js', '/style.css': 'style.css', '/constellation.css': 'constellation.css', '/favicon.svg': 'favicon.svg' };
       if (req.method !== 'GET' || !names[url.pathname]) throw new Problem('Page not found.', 404);
       const file = names[url.pathname];
       const types = { html: 'text/html', js: 'text/javascript', css: 'text/css', svg: 'image/svg+xml' };

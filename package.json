@@ -1,12 +1,13 @@
 {
   "name": "grill-my-mind",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "engines": { "node": ">=20" },
   "scripts": {
     "start": "node skills/grill-my-mind/scripts/server.mjs",
-    "test": "node --test tests/store.test.mjs tests/server.test.mjs tests/cli.test.mjs tests/graph.test.mjs",
-    "check": "node --check skills/grill-my-mind/scripts/server.mjs && node --check skills/grill-my-mind/scripts/store.mjs && node --check skills/grill-my-mind/scripts/cli.mjs && node --check skills/grill-my-mind/assets/app.js && node --check skills/grill-my-mind/assets/graph.js"
+    "test": "node scripts/test.mjs",
+    "check": "node scripts/check.mjs",
+    "demo": "node scripts/review-demo.mjs --serve"
   }
 }

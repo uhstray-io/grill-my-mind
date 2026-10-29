@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { Store } from '../skills/grill-my-mind/scripts/store.mjs';
+import { growthTimeline, mapAtGrowthStep } from '../skills/grill-my-mind/assets/history.js';
 
 async function fixture() {
   const root = path.resolve('.test-output'); await mkdir(root, { recursive: true });
@@ -178,4 +179,134 @@ test('legacy queued and running repeat jobs stop on restart without discarding h
   assert.equal(reopened.jobs[0].status, 'completed'); assert.equal(reopened.jobs[1].status, 'cancelled');
   assert.equal(await store.claim('two'), null);
   await assert.rejects(store.complete(map.id, 'job-legacy', 'fixture-key', result()), error => error.status === 409);
+});
+
+test('growth records one durable batch per result, including semantic connections and duplicate delivery', async () => {
+  const { store, map } = await fixture();
+  assert.deepEqual(map.growth.batches[0].nodeIds, [map.rootId]);
+  let saved = await action(store, map.id, map.rootId, 'suggest', { title: 'Existing direction', body: 'An earlier branch.' });
+  const earlier = saved.nodes[1];
+  const job = await store.claim('one');
+  saved = await store.complete(map.id, job.jobId, job.claimKey, result({
+    suggestions: [{ title: 'New direction', body: 'A new branch.' }, { title: 'New direction', body: 'A duplicate branch.' }, { title: 'Existing direction', body: 'Already exists.' }],
+    links: [{ to: earlier.id, type: 'supports' }, { to: earlier.id, type: 'supports' }],
+  }));
+  const addition = saved.growth.batches.at(-1);
+  assert.equal(saved.growth.batches.length, 3);
+  assert.equal(addition.sequence, 3);
+  assert.deepEqual(addition.nodeIds, [saved.nodes[2].id]);
+  assert.equal(addition.edges.length, 2);
+  assert.equal(saved.nodes[2].createdAt, addition.at);
+  for (const edge of saved.edges.slice(1)) assert.equal(edge.createdAt, addition.at);
+  const timeline = growthTimeline(saved);
+  assert.deepEqual(timeline.steps.map(step => [step.nodeCount, step.edgeCount]), [[1, 0], [2, 1], [3, 3]]);
+  assert.equal(timeline.incomplete, false);
+  const repeated = await store.complete(map.id, job.jobId, job.claimKey, { invalid: 'Delivery is already complete.' });
+  assert.deepEqual(repeated, saved);
+  const reopened = await new Store(store.directory).get(map.id);
+  assert.deepEqual(reopened.growth, saved.growth);
+  assert.deepEqual(growthTimeline(reopened), timeline);
+  assert.deepEqual(mapAtGrowthStep(reopened, 1).nodes.map(node => node.id), [map.rootId, earlier.id]);
+  assert.deepEqual(mapAtGrowthStep(reopened, 1).edges.map(({ from, to, type }) => ({ from, to, type })), [{ from: map.rootId, to: earlier.id, type: 'contains' }]);
+});
+
+test('edge-only results add a growth step; work, answers, layout and review do not', async () => {
+  const { store, map } = await fixture();
+  let saved = await action(store, map.id, map.rootId, 'suggest', { title: 'Neighbor', body: 'A related idea.' });
+  const neighbor = saved.nodes[1].id;
+  const before = structuredClone(saved.growth);
+  const first = await store.claim('one');
+  saved = await store.complete(map.id, first.jobId, first.claimKey, result({ questions: ['Continue?'] }));
+  assert.deepEqual(saved.growth, before);
+  saved = await action(store, map.id, map.rootId, 'answer', { questionId: saved.nodes[0].questions[0].id, answer: 'Yes.' });
+  saved = await action(store, map.id, map.rootId, 'position', { x: 11, y: 24 });
+  assert.deepEqual(saved.growth, before);
+  const next = await new Store(store.directory).claim('two');
+  saved = await store.complete(map.id, next.jobId, next.claimKey, result({ links: [{ to: neighbor, type: 'related_to' }], questions: ['Anything else?'] }));
+  const addition = saved.growth.batches.at(-1);
+  assert.deepEqual(addition.nodeIds, []);
+  assert.equal(addition.edges.length, 1);
+  assert.deepEqual(growthTimeline(saved).steps.map(step => [step.nodeCount, step.edgeCount]), [[1, 0], [2, 1], [2, 2]]);
+  const after = structuredClone(saved.growth);
+  await action(store, map.id, map.rootId, 'answer', { questionId: saved.nodes[0].questions.at(-1).id, answer: 'No.' });
+  const final = await store.claim('three');
+  saved = await store.complete(map.id, final.jobId, final.claimKey, result({
+    links: [{ to: neighbor, type: 'related_to' }], suggestions: [{ title: 'Neighbor', body: 'Still the existing branch.' }],
+  }));
+  assert.deepEqual(saved.growth, after);
+  saved = await action(store, map.id, map.rootId, 'accept');
+  assert.deepEqual(saved.growth, after);
+});
+
+test('invalid and stale results cannot persist partial growth events', async () => {
+  const { store, map } = await fixture();
+  const job = await store.claim('one');
+  const before = await readFile(store.file(map.id), 'utf8');
+  await assert.rejects(store.complete(map.id, job.jobId, job.claimKey, result({ suggestions: [{ title: 'Valid', body: 'Would be added.' }], links: [{ to: 'missing', type: 'supports' }] })));
+  assert.equal(await readFile(store.file(map.id), 'utf8'), before);
+  await action(store, map.id, map.rootId, 'revise', { body: 'A changed premise.' });
+  const saved = await store.complete(map.id, job.jobId, job.claimKey, result({ suggestions: [{ title: 'Stale addition', body: 'Must stay in the old job.' }] }));
+  assert.equal(saved.growth.batches.length, 1);
+  assert.equal(saved.nodes.length, 1);
+  assert.equal(saved.jobs[0].stale, true);
+  assert.equal(saved.jobs[0].result.suggestions.length, 1);
+});
+
+test('malformed mutation and result objects return client errors without changing the saved map', async () => {
+  const { store, map } = await fixture();
+  const job = await store.claim('one');
+  const before = await readFile(store.file(map.id), 'utf8');
+  for (const malformed of [null, [], 'text', 12]) {
+    await assert.rejects(store.create(malformed), error => error.status === 400);
+    await assert.rejects(store.action(map.id, malformed), error => error.status === 400);
+    await assert.rejects(store.complete(map.id, job.jobId, job.claimKey, malformed), error => error.status === 400);
+    for (const field of ['questions', 'suggestions', 'sources', 'links']) {
+      if (field === 'questions' && typeof malformed === 'string') continue;
+      await assert.rejects(store.complete(map.id, job.jobId, job.claimKey, result({ [field]: [malformed] })), error => error.status === 400);
+    }
+  }
+  assert.equal(await readFile(store.file(map.id), 'utf8'), before);
+  assert.equal((await store.list()).length, 1);
+  const saved = await store.complete(map.id, job.jobId, job.claimKey, result());
+  assert.equal(saved.nodes[0].status, 'explored');
+});
+
+test('legacy maps keep their original bytes on read and original timing when growth is first recorded', async () => {
+  const { store, map } = await fixture();
+  const legacy = await action(store, map.id, map.rootId, 'suggest', { title: 'Legacy direction', body: 'Added before connection history.' });
+  delete legacy.growth;
+  delete legacy.nodes[1].createdAt;
+  for (const edge of legacy.edges) delete edge.createdAt;
+  const source = JSON.stringify(legacy);
+  await writeFile(store.file(map.id), source);
+  const reopened = new Store(store.directory);
+  const read = await reopened.get(map.id);
+  growthTimeline(read); mapAtGrowthStep(read, 0);
+  await reopened.recover();
+  assert.equal(await readFile(store.file(map.id), 'utf8'), source);
+  const saved = await action(reopened, map.id, map.rootId, 'suggest', { title: 'New direction', body: 'Recorded from now on.' });
+  assert.equal(saved.schemaVersion, 1);
+  assert.deepEqual(saved.nodes.slice(0, 2), legacy.nodes);
+  assert.deepEqual(saved.edges[0], legacy.edges[0]);
+  assert.equal(saved.growth.batches.length, 1);
+  assert.deepEqual(saved.growth.batches[0].nodeIds, [saved.nodes[2].id]);
+  const timeline = growthTimeline(saved);
+  assert.equal(timeline.unknownNodeCount, 1);
+  assert.equal(timeline.unknownEdgeCount, 1);
+  assert.equal(timeline.steps.at(-1).at, null);
+});
+
+test('demo and changed-premise branches record complete addition batches', async () => {
+  const { store, map } = await fixture();
+  const demo = await store.demo();
+  assert.equal(demo.growth.batches.length, 1);
+  assert.equal(demo.growth.batches[0].nodeIds.length, demo.nodes.length);
+  assert.equal(demo.growth.batches[0].edges.length, demo.edges.length);
+  assert.equal(growthTimeline(demo).steps.length, 1);
+  const job = await store.claim('one', map.id);
+  await store.complete(map.id, job.jobId, job.claimKey, result());
+  const forked = await action(store, map.id, map.rootId, 'fork-revision', { body: 'Explore a changed premise.' });
+  assert.equal(forked.growth.batches.length, 2);
+  assert.deepEqual(forked.growth.batches[1].nodeIds, [forked.nodes[1].id]);
+  assert.deepEqual(forked.growth.batches[1].edges, [{ from: map.rootId, to: forked.nodes[1].id, type: 'contains' }]);
 });

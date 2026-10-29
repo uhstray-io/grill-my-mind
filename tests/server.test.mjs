@@ -44,3 +44,30 @@ test('one server owns a workspace at a time', async () => {
   try { await assert.rejects(startServer({ workspace, port: 0 }), /already owns/); }
   finally { await app.close(); }
 });
+
+test('brief is authenticated, read-only, scoped, and does not expose worker claims', async () => {
+  const root = path.resolve('.test-output'); await mkdir(root, { recursive: true });
+  const workspace = await mkdtemp(path.join(root, 'brief-http-'));
+  const app = await startServer({ workspace, port: 0 });
+  try {
+    const map = await app.store.create({ title: 'Plan a community workshop', idea: 'Compare a hands-on workshop with a discussion group.' });
+    const packet = await app.store.claim('test', map.id);
+    await app.store.complete(map.id, packet.jobId, packet.claimKey, { summary: 'Choose the audience before the format.', body: 'The desired outcome shapes the format.',
+      questions: ['Who should be able to participate?'], suggestions: [{ title: 'Accessible venue', body: 'Check transport and access requirements.', kind: 'risk' }] });
+    const before = await app.store.get(map.id);
+    const route = `${app.address}/api/maps/${map.id}/brief`;
+    assert.equal((await fetch(route)).status, 401);
+    const { token } = await (await fetch(app.address + '/api/session')).json();
+    const headers = { Authorization: `Bearer ${token}` };
+    const brief = await (await fetch(route, { headers })).json();
+    assert.equal(brief.counts.awaitingAnswer, 1);
+    assert.equal(brief.sections.find(s => s.id === 'directions').total, 1);
+    assert.doesNotMatch(JSON.stringify(brief), new RegExp(packet.claimKey));
+    assert.equal((await fetch(route, { headers: { ...headers, Origin: 'https://external.invalid' } })).status, 403);
+    const child = before.nodes[1];
+    const scoped = await (await fetch(route + `?node=${child.id}`, { headers })).json();
+    assert.equal(scoped.counts.nodes, 1);
+    assert.equal((await fetch(route + '?node=missing', { headers })).status, 404);
+    assert.deepEqual(await app.store.get(map.id), before);
+  } finally { await app.close(); }
+});
