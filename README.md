@@ -66,6 +66,8 @@ node scripts/verify-prototypes.mjs
 
 Tests cover queue authorization, concurrent results, stale premises, cancellation, resumption, bounded context, HTTP/CLI operation, constellation layout and status presentation, saved coordinates, and packaging for all three discovery paths. Packaging tests do not establish live runtime compatibility with those hosts.
 
+An optional real-browser workflow check is available in `scripts/browser-smoke.mjs`. It uses an existing Playwright installation and your explicitly chosen browser executable, creates only disposable maps, and saves screenshots and a report. See the [polish review](docs/iterations/2026-10-29-polish.md) for the command and what was exercised. It is not a runtime dependency of the skill.
+
 ## Design and research
 
 - [Product brief](docs/product-brief.md): confirmed requirements and open questions.

@@ -12,7 +12,7 @@ The JSON snapshot is the only source of truth. Markdown files are readable proje
 
 `schemaVersion` identifies the format; `revision` identifies a saved map state. Stable map/node/job IDs survive title and layout changes. The original user idea is preserved in `originalIdea`; each node's `prompt` records its current premise independently of model-generated `body` findings. Prior premises and research results remain in history/jobs.
 
-Nodes contain `id`, `title`, `kind`, `parentId`, `prompt`, `summary`, `body`, `status`, `reviewState`, `contentRevision`, `questions`, `sources`, and `stale`. Questions retain answers and answer timestamps. Sources retain an HTTP(S) URL, descriptive title, the supported/challenged proposition, and retrieval timestamp.
+Nodes contain `id`, `title`, `kind`, `parentId`, `prompt`, `summary`, `body`, `status`, `reviewState`, `contentRevision`, `questions`, `sources`, and `stale`. Questions retain answers and answer timestamps. A question from a changed premise optionally records `supersededAt`; its actual answer remains unchanged as history, and unanswered earlier questions no longer require an answer. Sources retain an HTTP(S) URL, descriptive title, the supported/challenged proposition, and retrieval timestamp.
 
 - Work states: `suggested`, `queued`, `running`, `awaiting-answer`, `explored`, `interrupted`.
 - `explored` is terminal for that branch. New terminal results record optional `completedAt`; older snapshots infer completion from explored state or a successful terminal job. A changed-premise child optionally records `revises` referencing its earlier investigation. These additive fields do not change schema version 1. Public responses expose derived `completed` for UI behavior.

@@ -1,4 +1,4 @@
-import { Problem } from './store.mjs';
+import { Problem, hasFindings } from './store.mjs';
 
 const clip = (value, limit) => {
   const text = String(value ?? '');
@@ -19,16 +19,16 @@ export function mapBrief(map, nodeId = null) {
   }
   const nodes = map.nodes.filter(node => ids.has(node.id));
   const count = predicate => nodes.filter(predicate).length;
-  const hasFindings = node => ['explored', 'awaiting-answer'].includes(node.status) || (map.jobs || []).some(job =>
-    job.nodeId === node.id && job.status === 'completed' && !job.stale && job.result?.body === node.body && job.result?.summary === node.summary);
   const entry = (node, text = node.summary, extra = {}) => ({ nodeId: node.id, title: clip(node.title, 100), text: clip(text, 320),
     status: node.status, reviewState: node.reviewState, stale: !!node.stale, ...extra });
   const definitions = [
     ['stale', 'Findings that need review', nodes.filter(n => n.stale).map(n => entry(n))],
-    ['questions', 'Questions waiting for you', nodes.flatMap(n => n.questions.filter(q => !q.answer && n.status === 'awaiting-answer').map(q => entry(n, q.text, { questionId: q.id })))],
+    ['questions', 'Questions waiting for you', nodes.flatMap(n => n.questions.filter(q => !q.answer && !q.supersededAt && n.status === 'awaiting-answer').map(q => entry(n, q.text, { questionId: q.id })))],
     ['accepted', 'Accepted and current findings', nodes.filter(n => n.reviewState === 'accepted' && !n.stale && n.status === 'explored').map(n => entry(n))],
-    ['findings', 'Working findings — not accepted', nodes.filter(n => hasFindings(n) && n.reviewState !== 'accepted' && !n.stale).map(n => entry(n, n.summary, { sourceCount: n.sources.length }))],
-    ['answers', 'Recorded user answers', nodes.flatMap(n => n.questions.filter(q => q.answer).map(q => entry(n, q.answer, { questionId: q.id, question: clip(q.text, 240) })))],
+    ['findings', 'Working findings — not accepted', nodes.filter(n => hasFindings(map, n) && n.reviewState !== 'accepted' && !n.stale).map(n => entry(n, n.summary, { sourceCount: n.sources.length }))],
+    ['premises', 'Current premises — not findings', nodes.filter(n => !hasFindings(map, n) && n.status !== 'suggested').map(n => entry(n, n.prompt || n.summary))],
+    ['answers', 'Recorded user answers', nodes.flatMap(n => n.questions.filter(q => q.answer && !q.supersededAt).map(q => entry(n, q.answer, { questionId: q.id, question: clip(q.text, 240) })))],
+    ['superseded', 'Earlier questions and answers — previous premises', nodes.flatMap(n => n.questions.filter(q => q.supersededAt).map(q => entry(n, q.answer || 'No answer was recorded.', { questionId: q.id, question: clip(q.text, 240), supersededAt: q.supersededAt })))],
     ['risks', 'Risk investigations — not verified risks', nodes.filter(n => n.kind === 'risk').map(n => entry(n))],
     ['directions', 'Unexplored directions', nodes.filter(n => n.status === 'suggested').map(n => entry(n, n.prompt || n.summary))],
     ['active', 'Queued, running, or interrupted work', nodes.filter(n => ['queued', 'running', 'interrupted'].includes(n.status)).map(n => entry(n))],

@@ -30,7 +30,13 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
   const connectionPath = path.join(runtime, 'connection.json');
   const token = randomBytes(32).toString('hex');
   const store = new Store(dataDirectory || path.join(workspace, 'ideas'));
-  let address, lastSeen = 0, worker = '', closing = false;
+  let address, worker = '', closing = false;
+  const listeners = new Map();
+  const bridgeStatus = () => {
+    for (const [key, listener] of listeners) if (Date.now() - listener.lastSeen >= 40000) listeners.delete(key);
+    return { listening: listeners.size > 0, worker,
+      scopes: [...listeners.values()].map(({ mapId, worker }) => ({ mapId, worker, listening: true })) };
+  };
   try { await store.recover(); } catch (error) { await unlink(lockPath); throw error; }
   const send = (res, status, data) => {
     if (!res.writableEnded) { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(data)); }
@@ -47,7 +53,7 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
       if (req.method === 'GET' && url.pathname === '/api/session') return send(res, 200, { token, workspace: path.basename(workspace), workspacePath: workspace, skillPath: fileURLToPath(new URL('../SKILL.md', import.meta.url)), dataDirectory: store.directory });
       if (url.pathname.startsWith('/api/')) {
         if (req.headers.authorization !== `Bearer ${token}`) throw new Problem('Open the workspace again to reconnect.', 401);
-        if (req.method === 'GET' && url.pathname === '/api/maps') return send(res, 200, { maps: await store.list(), bridge: { listening: Date.now() - lastSeen < 40000, worker } });
+        if (req.method === 'GET' && url.pathname === '/api/maps') return send(res, 200, { maps: await store.list(), bridge: bridgeStatus() });
         const briefRoute = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)\/brief$/);
         if (req.method === 'GET' && briefRoute) return send(res, 200, mapBrief(await store.get(briefRoute[1]), url.searchParams.get('node')));
         const contextRoute = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)\/context$/);
@@ -55,13 +61,16 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
         const match = url.pathname.match(/^\/api\/maps\/([a-z0-9-]+)(?:\/(action|result|fail))?$/);
         if (req.method === 'GET' && match && !match[2]) return send(res, 200, publicMap(await store.get(match[1])));
         if (req.method === 'GET' && url.pathname === '/api/next') {
-          worker = (url.searchParams.get('worker') || 'agent').slice(0, 100);
+          const workerName = (url.searchParams.get('worker') || 'agent').slice(0, 100);
+          const mapId = url.searchParams.get('map') || null;
           const wait = Math.max(0, Math.min(25, Number(url.searchParams.get('wait')) || 0));
           const deadline = Date.now() + wait * 1000;
           do {
             if (res.destroyed || closing) return;
-            lastSeen = Date.now();
-            const packet = await store.claim(worker, url.searchParams.get('map') || undefined);
+            const packet = await store.claim(workerName, mapId || undefined);
+            worker = workerName;
+            listeners.set(JSON.stringify([mapId, workerName]), { mapId, worker: workerName, lastSeen: Date.now() });
+            bridgeStatus();
             if (packet) return send(res, 200, packet);
             if (Date.now() >= deadline) break;
             await new Promise(resolve => setTimeout(resolve, 500));
@@ -70,8 +79,9 @@ export async function startServer({ workspace = process.cwd(), port = 4317, data
         }
         if (req.method !== 'POST') throw new Problem('Route not found.', 404);
         if (!req.headers['content-type']?.startsWith('application/json')) throw new Problem('Use application/json.', 415);
-        let raw = '';
-        for await (const chunk of req) { raw += chunk; if (Buffer.byteLength(raw) > 180000) throw new Problem('Request is too large.', 413); }
+        const chunks = []; let bytes = 0;
+        for await (const chunk of req) { bytes += chunk.length; if (bytes > 180000) throw new Problem('Request is too large.', 413); chunks.push(chunk); }
+        const raw = Buffer.concat(chunks).toString('utf8');
         let body; try { body = JSON.parse(raw); } catch { throw new Problem('Invalid JSON.'); }
         if (url.pathname === '/api/maps') return send(res, 201, publicMap(await store.create(body)));
         if (url.pathname === '/api/demo') return send(res, 201, publicMap(await store.demo()));

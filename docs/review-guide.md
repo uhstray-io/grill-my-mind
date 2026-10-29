@@ -44,9 +44,11 @@ For your real workspace, use `node skills/grill-my-mind/scripts/server.mjs --wor
 
 Baseline: 25 tests passed before changes on Node.js 24.22.1, Windows. The sandbox initially blocked loopback connections; the same tests passed with permission to connect to their own temporary local servers.
 
-Final checks, browser observations, independent agent trials, and any discovered defects are recorded in [the iteration record](iterations/2026-10-29.md). Do not treat a planned check as a passed check.
+Initial checks and independent agent trials are recorded in [the iteration record](iterations/2026-10-29.md). The subsequent [polish review](iterations/2026-10-29-polish.md) records the deeper correctness review, fixes, and real Brave workflow checks. Do not treat a planned check as a passed check.
 
-The final automated suite passes **64 tests**. Two fresh agents exercised technical and nontechnical ideas, and a third recovered saved context without their conversations. They exposed a partial-findings omission that was fixed and independently retested. Desktop/mobile visual interaction remains pending because the Windows desktop was locked during Brave validation.
+Two fresh agents exercised technical and nontechnical ideas, and a third recovered saved context without their conversations. They exposed a partial-findings omission that was fixed and independently retested. The polish pass adds regression coverage for revised-premise history, dependent partial findings, Unicode transport, scoped agent presence, and asynchronous editing. Headless Brave now exercises desktop and phone-width layouts, dragging, history, native undo during polling, exports, and save races; see the polish record for final counts and evidence. Live Claude Code/Copilot and real long-session context validation remain open.
+
+The polished branch passes **90 automated tests and 13 Brave workflow checks**. No reproduced blocker remains in those tested workflows.
 
 Live Claude Code and GitHub Copilot execution, actual long-session host context/compaction, multi-device collaboration, and full content history are not established by these changes. Existing saved prototype snapshots remain comparisons rather than production workflows.
 

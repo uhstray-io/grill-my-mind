@@ -310,3 +310,98 @@ test('demo and changed-premise branches record complete addition batches', async
   assert.deepEqual(forked.growth.batches[1].nodeIds, [forked.nodes[1].id]);
   assert.deepEqual(forked.growth.batches[1].edges, [{ from: map.rootId, to: forked.nodes[1].id, type: 'contains' }]);
 });
+
+test('revising a paused branch preserves earlier answers and findings while superseding old questions', async () => {
+  const { store, map } = await fixture();
+  const first = await store.claim('one', map.id);
+  let saved = await store.complete(map.id, first.jobId, first.claimKey, result({
+    questions: ['Who owns the data?', 'How should offline conflicts merge?'],
+    sources: [{ title: 'Offline evidence', url: 'https://example.org/offline', note: 'Evidence for the earlier premise.' }],
+  }));
+  const [answered, pending] = saved.nodes[0].questions;
+  saved = await action(store, map.id, map.rootId, 'answer', { questionId: answered.id, answer: 'The participants own their data.' });
+  const earlierJob = structuredClone(saved.jobs[0]);
+  saved = await action(store, map.id, map.rootId, 'revise', { body: 'A shared online library of observations.' });
+  const revised = saved.nodes[0];
+  assert.equal(revised.status, 'interrupted');
+  assert.equal(revised.stale, false);
+  assert.deepEqual(revised.sources, []);
+  assert.deepEqual(saved.jobs[0], earlierJob, 'earlier findings and evidence remain in their original result');
+  assert.equal(revised.questions[0].answer, 'The participants own their data.');
+  assert.equal(revised.questions[1].answer, null);
+  assert.ok(revised.questions.every(q => q.supersededAt));
+  assert.equal(await store.claim('one', map.id), null, 'revision does not start a new investigation');
+  await assert.rejects(action(store, map.id, map.rootId, 'answer', { questionId: pending.id, answer: 'An invented answer.' }), error => error.status === 409);
+  const document = await readFile(path.join(store.directory, map.id, 'nodes', `${map.rootId}.md`), 'utf8');
+  assert.match(document, /## Current premise \(not researched findings\)/);
+  assert.match(document, /## Earlier investigation result/);
+  assert.match(document, /Offline evidence/);
+  assert.match(document, /Question from an earlier premise/);
+  assert.doesNotMatch(document, /_Awaiting the user\._/);
+  await action(store, map.id, map.rootId, 'activate');
+  const next = await store.claim('two', map.id);
+  assert.deepEqual(next.selected.questions.map(q => q.id), [answered.id]);
+  assert.equal(next.selected.questions[0].answer, 'The participants own their data.');
+  assert.ok(next.selected.questions[0].supersededAt);
+  assert.equal(next.supersededQuestions, 2);
+  saved = await store.complete(map.id, next.jobId, next.claimKey, result({ questions: ['Who can join the library?'] }));
+  saved = await action(store, map.id, map.rootId, 'answer', { questionId: saved.nodes[0].questions.at(-1).id, answer: 'Invited participants.' });
+  const final = await store.claim('three', map.id);
+  assert.ok(final, 'the unanswered superseded question cannot block a new answer');
+  saved = await store.complete(map.id, final.jobId, final.claimKey, result());
+  assert.equal(saved.nodes[0].status, 'explored');
+  assert.equal(saved.nodes[0].questions[1].answer, null);
+});
+
+for (const change of ['revise', 'fork-revision']) test(`${change} invalidates partial descendant findings and running results`, async () => {
+  const { store, map } = await fixture();
+  const first = await store.claim('one', map.id);
+  let saved = await store.complete(map.id, first.jobId, first.claimKey, result({
+    ...(change === 'revise' ? { questions: ['Who is this for?'] } : {}),
+    suggestions: [{ title: 'Paused branch', body: 'Explore local storage.' }, { title: 'Running branch', body: 'Explore device access.' }],
+  }));
+  const pausedId = saved.nodes[1].id, runningId = saved.nodes[2].id;
+  await action(store, map.id, pausedId, 'activate');
+  const paused = await store.claim('paused', map.id);
+  await store.complete(map.id, paused.jobId, paused.claimKey, result({ summary: 'Local storage is sufficient.', questions: ['How much local storage?'] }));
+  await action(store, map.id, runningId, 'activate');
+  const partial = await store.claim('running', map.id);
+  saved = await store.complete(map.id, partial.jobId, partial.claimKey, result({ summary: 'Device access uses local permissions.', questions: ['Which devices?'] }));
+  const runningNode = saved.nodes.find(n => n.id === runningId);
+  await action(store, map.id, runningId, 'answer', { questionId: runningNode.questions[0].id, answer: 'Shared tablets.' });
+  const running = await store.claim('continuing', map.id);
+  saved = await action(store, map.id, map.rootId, change, { body: 'The workflow must share live records online.' });
+  assert.equal(saved.nodes.find(n => n.id === pausedId).stale, true);
+  assert.equal(saved.nodes.find(n => n.id === pausedId).status, 'interrupted');
+  assert.ok(saved.nodes.find(n => n.id === pausedId).questions[0].supersededAt);
+  assert.equal(saved.nodes.find(n => n.id === runningId).stale, true);
+  assert.equal(saved.nodes.find(n => n.id === runningId).status, 'running');
+  assert.equal(saved.nodes.find(n => n.id === runningId).summary, 'Device access uses local permissions.');
+  saved = await store.complete(map.id, running.jobId, running.claimKey, result({ summary: 'A late result based on the original premise.', suggestions: [{ title: 'Old-premise direction', body: 'Do not apply this.' }] }));
+  assert.equal(saved.jobs.find(j => j.id === running.jobId).stale, true);
+  assert.equal(saved.nodes.find(n => n.id === runningId).status, 'interrupted');
+  assert.equal(saved.nodes.find(n => n.id === runningId).summary, 'Device access uses local permissions.');
+  assert.ok(!saved.nodes.some(n => n.title === 'Old-premise direction'));
+  assert.equal(await store.claim('one', map.id), null);
+});
+
+test('changed dependencies invalidate their partial findings without touching unrelated branches', async () => {
+  const { store, map } = await fixture();
+  const first = await store.claim('root', map.id);
+  let saved = await store.complete(map.id, first.jobId, first.claimKey, result({ suggestions: [
+    { title: 'Assumption', body: 'Clarify one constraint.' }, { title: 'Dependent', body: 'Use that constraint.' }, { title: 'Independent', body: 'Explore an unrelated constraint.' },
+  ] }));
+  const [assumption, dependent, independent] = saved.nodes.slice(1);
+  for (const node of [assumption, dependent, independent]) {
+    await action(store, map.id, node.id, 'activate');
+    const packet = await store.claim('test', map.id);
+    await store.complete(map.id, packet.jobId, packet.claimKey, result({ summary: `${node.title} partial finding.`, questions: [`Clarify ${node.title}?`],
+      ...(node.id === dependent.id ? { links: [{ to: assumption.id, type: 'depends_on' }] } : {}) }));
+  }
+  saved = await store.get(map.id);
+  const beforeIndependent = structuredClone(saved.nodes.find(n => n.id === independent.id));
+  saved = await action(store, map.id, assumption.id, 'revise', { body: 'A replacement constraint.' });
+  assert.equal(saved.nodes.find(n => n.id === dependent.id).stale, true);
+  assert.equal(saved.nodes.find(n => n.id === dependent.id).status, 'interrupted');
+  assert.deepEqual(saved.nodes.find(n => n.id === independent.id), beforeIndependent);
+});

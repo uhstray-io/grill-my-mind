@@ -43,4 +43,4 @@ The 2026-10-29 improvement initiative implemented an additions-only timeline on 
 
 Automated checks cover equal timestamps, clock regression, edge-only additions, malformed/stale result atomicity, duplicate delivery, reload, legacy maps, detached read-only views, and 500 nodes across 250 additions. See [review guide](../../../docs/review-guide.md) and [iteration evidence](../../../docs/iterations/2026-10-29.md).
 
-This ticket remains in progress for the visual acceptance criterion: the Windows desktop was locked during Brave validation, and native browser interaction was stopped. The implementation is available for the owner to review; no owner design approval is inferred.
+The subsequent [polish review](../../../docs/iterations/2026-10-29-polish.md) exercised history scrubbing, read-only behavior, return-to-live drafts, and desktop/phone-width rendering in actual headless Brave. This ticket remains in progress for owner visual acceptance; automated browser verification does not imply owner design approval.

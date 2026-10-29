@@ -82,3 +82,5 @@ Issue 11's implemented retrieval and measurement work:
 - The actual two-step issue-10 implementation investigation recorded six CLI outputs: creation 76 characters, two packets 3,309, two result acknowledgements 208, and one targeted findings read 687. Total: 4,280 characters / 4,290 UTF-8 bytes. Browser observations, code/test reads, model-generated text, and other tools are not included.
 
 The long real-session/host context criterion remains open. This environment provides account-wide usage limits rather than an attributable active-context/token counter, so no host token total or compaction behavior is asserted. The shorter actual investigation and synthetic retrieval checks do not substitute for that longer trial. The updated targeted path was tested with new CLI processes; no second fresh-model agent trial was performed.
+
+The later [2026-10-29 polish review](iterations/2026-10-29-polish.md) records the complete-branch audit, regression fixes, and real Brave browser checks. It supersedes the earlier locked-desktop browser gap while retaining the explicit live-host and long-session limits.

@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
+import http from 'node:http';
+import { setTimeout as delay } from 'node:timers/promises';
 import { startServer } from '../skills/grill-my-mind/scripts/server.mjs';
 
 test('HTTP workspace runs the complete queue/question/result/restart loop', async () => {
@@ -69,5 +71,38 @@ test('brief is authenticated, read-only, scoped, and does not expose worker clai
     assert.equal(scoped.counts.nodes, 1);
     assert.equal((await fetch(route + '?node=missing', { headers })).status, 404);
     assert.deepEqual(await app.store.get(map.id), before);
+  } finally { await app.close(); }
+});
+
+test('HTTP saves preserve UTF-8 characters split across request chunks', async () => {
+  const root = path.resolve('.test-output'); await mkdir(root, { recursive: true });
+  const workspace = await mkdtemp(path.join(root, 'unicode-http-'));
+  const app = await startServer({ workspace, port: 0 });
+  try {
+    const { token } = await (await fetch(app.address + '/api/session')).json();
+    const idea = 'Keep the café notes 🧠 intact.';
+    const bytes = Buffer.from(JSON.stringify({ title: 'Unicode notes', idea }));
+    const boundaries = [0, bytes.indexOf(Buffer.from('é')) + 1, bytes.indexOf(Buffer.from('🧠')) + 2, bytes.length];
+    const response = await new Promise((resolve, reject) => {
+      const request = http.request(app.address + '/api/maps', { method: 'POST', headers: {
+        Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'Content-Length': bytes.length,
+      } }, response => {
+        response.setEncoding('utf8'); let raw = '';
+        response.on('data', chunk => { raw += chunk; });
+        response.on('end', () => resolve({ status: response.statusCode, body: JSON.parse(raw) }));
+        response.on('error', reject);
+      });
+      request.on('error', reject);
+      (async () => {
+        for (let index = 0; index < boundaries.length - 1; index++) {
+          request.write(bytes.subarray(boundaries[index], boundaries[index + 1]));
+          await delay(25);
+        }
+        request.end();
+      })().catch(reject);
+    });
+    assert.equal(response.status, 201);
+    assert.equal(response.body.originalIdea, idea);
+    assert.equal((await app.store.get(response.body.id)).nodes[0].prompt, idea);
   } finally { await app.close(); }
 });

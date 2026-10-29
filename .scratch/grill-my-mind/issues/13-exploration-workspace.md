@@ -34,3 +34,5 @@ The owner authorized substantial improvements on a separate review branch, inclu
 Baseline on 2026-10-29: all 25 existing Node tests passed with local loopback networking enabled. Main and origin/main both pointed to `bb4a0545a68cc4e399656876667b13161569cfde` before work. Implementation and final results will be linked here when ready for review.
 
 Implementation is documented in [the review guide](../../../docs/review-guide.md), with test results, fresh-agent trials, corrected defects, and remaining UI/host validation limits in [the iteration record](../../../docs/iterations/2026-10-29.md). The owner reviews and decides whether to merge. Main is not a push target.
+
+The owner's follow-up polish request is covered by [the polish review](../../../docs/iterations/2026-10-29-polish.md), including independent correctness review, revised-premise recovery fixes, and reproducible Brave workflow validation. Remaining live-host and long-session limits are explicit.

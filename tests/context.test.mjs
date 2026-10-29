@@ -34,3 +34,35 @@ test('pages reconstruct long evidence exactly and reject stale or invalid contin
   contextExcerpt(map, 'node-test', { section: 'questions', query: 'privacy' });
   assert.deepEqual(map, before);
 });
+
+test('targeted reads label superseded questions and keep actual earlier answers', () => {
+  const map = fixture();
+  const at = '2026-10-29T12:00:00.000Z';
+  map.nodes[0].questions = [{ id: 'answered', text: 'Who owns the data?', answer: 'The participants.', supersededAt: at },
+    { id: 'superseded', text: 'How do offline conflicts merge?', answer: null, supersededAt: at },
+    { id: 'current', text: 'Who can join?', answer: null }];
+  const oldAnswer = contextExcerpt(map, 'node-test', { section: 'questions', question: 'answered' });
+  assert.match(oldAnswer.excerpt, /Answer: The participants\./);
+  assert.match(oldAnswer.excerpt, /Superseded: 2026-10-29/);
+  const oldQuestion = contextExcerpt(map, 'node-test', { section: 'questions', question: 'superseded' });
+  assert.match(oldQuestion.excerpt, /no answer recorded/);
+  assert.doesNotMatch(oldQuestion.excerpt, /Awaiting answer/);
+  assert.match(contextExcerpt(map, 'node-test', { section: 'questions', question: 'current' }).excerpt, /Awaiting answer/);
+});
+
+test('findings pages expose saved provenance and stale state without altering the text', () => {
+  const map = fixture(), node = map.nodes[0];
+  node.status = 'interrupted'; node.stale = true;
+  map.jobs.push({ nodeId: node.id, status: 'completed', result: { summary: node.summary, body: node.body } });
+  let page = contextExcerpt(map, node.id, { section: 'findings', limit: 6000 });
+  assert.equal(page.contentKind, 'findings');
+  assert.equal(page.stale, true);
+  assert.equal(page.status, 'interrupted');
+  assert.equal(page.reviewState, 'unreviewed');
+  assert.equal(page.excerpt, node.body.slice(0, 6000));
+  node.prompt = node.body = node.summary = 'A new user premise.'; node.stale = false;
+  page = contextExcerpt(map, node.id, { section: 'findings' });
+  assert.equal(page.contentKind, 'premise');
+  assert.equal(page.stale, false);
+  assert.equal(page.excerpt, 'A new user premise.');
+});

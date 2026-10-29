@@ -8,7 +8,8 @@ const fixture = () => ({ id: 'map-test', title: 'A project', rootId: 'root', ori
   nodes: [node('root'), node('accepted', { parentId: 'root', reviewState: 'accepted' }), node('stale', { parentId: 'root', reviewState: 'accepted', stale: true }),
     node('question', { parentId: 'root', status: 'awaiting-answer', questions: [{ id: 'q1', text: 'Who decides?', answer: null }, { id: 'q0', text: 'Budget?', answer: 'Under $50.' }] }),
     node('suggestion', { parentId: 'question', status: 'suggested', kind: 'risk' })],
-  edges: [{ from: 'accepted', to: 'stale', type: 'contradicts' }], jobs: [{ claimKey: 'do-not-export' }], view: {} });
+  edges: [{ from: 'accepted', to: 'stale', type: 'contradicts' }], jobs: [{ claimKey: 'do-not-export' },
+    { nodeId: 'question', status: 'completed', result: { body: 'Detailed evidence.', summary: 'A provisional observation.' } }], view: {} });
 
 test('brief separates accepted, stale, provisional and unanswered material without changing the map', () => {
   const map = fixture(), before = structuredClone(map), brief = mapBrief(map);
@@ -70,4 +71,47 @@ test('partial findings survive question pauses and continuation; long questions 
   }
   partial.prompt = partial.body = partial.summary = 'A revised premise, not findings.';
   assert.ok(!mapBrief(map).sections.find(s => s.id === 'findings').items.some(n => n.nodeId === partial.id));
+});
+
+test('a revised paused premise remains visible without being presented as current findings', () => {
+  const map = fixture();
+  const paused = map.nodes.find(n => n.id === 'question');
+  paused.prompt = paused.body = paused.summary = 'Instead, explore a neighborhood library.';
+  const brief = mapBrief(map);
+  assert.ok(!brief.sections.find(s => s.id === 'findings').items.some(n => n.nodeId === paused.id));
+  const premise = brief.sections.find(s => s.id === 'premises').items.find(n => n.nodeId === paused.id);
+  assert.equal(premise.text, paused.prompt);
+  assert.equal(premise.status, 'awaiting-answer');
+  assert.match(brief.markdown, /Current premises — not findings/);
+  assert.match(brief.markdown, /Instead, explore a neighborhood library/);
+});
+
+test('superseded questions remain retrievable without asking the user to answer them again', () => {
+  const map = fixture();
+  const paused = map.nodes.find(n => n.id === 'question');
+  paused.questions[0].supersededAt = '2026-10-29T12:00:00.000Z';
+  paused.questions.push({ id: 'q2', text: 'What does the new premise need?', answer: null });
+  const brief = mapBrief(map);
+  assert.deepEqual(brief.sections.find(s => s.id === 'questions').items.map(q => q.questionId), ['q2']);
+  const old = brief.sections.find(s => s.id === 'superseded').items[0];
+  assert.equal(old.questionId, 'q1');
+  assert.equal(old.question, 'Who decides?');
+  assert.equal(old.text, 'No answer was recorded.');
+  assert.equal(old.supersededAt, paused.questions[0].supersededAt);
+  assert.match(brief.markdown, /Earlier questions and answers — previous premises/);
+  assert.equal(brief.sections.find(s => s.id === 'answers').items[0].text, 'Under $50.');
+});
+
+test('answers from a changed premise retain their actual wording with historical context', () => {
+  const map = fixture();
+  const paused = map.nodes.find(n => n.id === 'question');
+  const answer = paused.questions.find(q => q.answer);
+  answer.supersededAt = '2026-10-29T12:00:00.000Z';
+  const brief = mapBrief(map);
+  assert.equal(brief.sections.find(s => s.id === 'answers').total, 0);
+  const historical = brief.sections.find(s => s.id === 'superseded').items[0];
+  assert.equal(historical.questionId, answer.id);
+  assert.equal(historical.question, answer.text);
+  assert.equal(historical.text, answer.answer);
+  assert.equal(historical.supersededAt, answer.supersededAt);
 });

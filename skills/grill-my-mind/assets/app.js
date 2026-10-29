@@ -31,13 +31,16 @@ function prose(value) {
     return `<p>${esc(block)}</p>`;
   }).join('');
 }
+function agentListening(mapId = state.map?.id) {
+  return Boolean(state.bridge.listening && (!mapId || !Array.isArray(state.bridge.scopes) || state.bridge.scopes.some(scope => scope.listening && (scope.mapId === null || scope.mapId === mapId))));
+}
 function connectionView(offline = false) {
-  const connected = state.bridge.listening && !offline;
+  const connected = agentListening() && !offline;
   $('#bridge-status').classList.toggle('connected', connected);
-  $('#bridge-status span').textContent = offline ? 'Server disconnected' : connected ? 'Agent is listening' : 'Connect your agent';
+  $('#bridge-status span').textContent = offline ? 'Server disconnected' : connected ? 'Agent is listening' : state.bridge.listening ? 'Agent on another map' : 'Connect your agent';
   const hint = $('#empty-hint');
   hint.classList.toggle('hidden', !state.map || state.historyStep !== null || connected || !state.map.jobs.some(j => j.status === 'queued'));
-  hint.textContent = 'Queued safely. Use “Connect your agent” above to continue.';
+  hint.textContent = 'Queued safely. Use the agent button above to continue.';
 }
 function renderRail() {
   const html = state.maps.length ? state.maps.map(m => `<button class="map-link ${state.map?.id === m.id ? 'current' : ''}" data-map="${m.id}" ${state.map?.id === m.id ? 'aria-current="page"' : ''}><span class="map-icon" aria-hidden="true">⌘</span><span><strong>${esc(m.title)}</strong><small>${m.demo ? 'Example map' : `${m.count} ${m.count === 1 ? 'idea' : 'ideas'}`}${m.pending ? ` · ${m.pending} queued` : ''}</small></span></button>`).join('') : '<p class="empty-list">Your ideas will find a home here.</p>';
@@ -47,13 +50,14 @@ async function refresh() {
   if (state.refreshing || state.mutating || gesture || document.hidden) return;
   state.refreshing = true;
   const version = openVersion;
+  const previouslyListening = agentListening();
   try {
     const data = await api('/maps'); state.maps = data.maps; state.bridge = data.bridge; renderRail(); connectionView();
     if (state.map && data.maps.find(m => m.id === state.map.id)?.revision !== state.map.revision) {
       const mapId = state.map.id, map = await api(`/maps/${mapId}`);
       if (version === openVersion && state.map?.id === mapId && !state.mutating && !gesture && map.revision >= state.map.revision) { state.map = map; renderMap(); }
     }
-    if (state.detailDeferred && version === openVersion && state.map) renderDetail();
+    if ((state.detailDeferred || previouslyListening !== agentListening()) && version === openVersion && state.map) renderDetail();
   } catch { connectionView(true); }
   finally { state.refreshing = false; }
 }
@@ -286,6 +290,12 @@ $('#download-brief').addEventListener('click', () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000); $('#brief-status').textContent = 'Brief downloaded as Markdown.';
 });
 
+function detailFocusKey(element) {
+  const form = element.closest('form'), editor = element.closest('details[data-editor]');
+  return JSON.stringify([element.tagName, element.getAttribute('href'),
+    ...['explore', 'cancel', 'accept', 'branchBrief', 'select'].map(key => element.dataset[key] || null),
+    form?.dataset.question || form?.id || null, editor?.dataset.editor || null]);
+}
 function renderDetail(force = false) {
   const detail = $('#detail'), previousNode = detail.dataset.nodeId;
   const historic = state.historyStep !== null;
@@ -298,7 +308,7 @@ function renderDetail(force = false) {
   state.detailDeferred = false;
   detail.dataset.history = String(historic);
   for (const editor of detail.querySelectorAll('details[data-editor]')) state.editors[`${previousNode}:${editor.dataset.editor}`] = editor.open;
-  const focus = active?.dataset.draft ? { key: active.dataset.draft, start: active.selectionStart, end: active.selectionEnd } : null;
+  const focus = active ? active.dataset.draft ? { key: active.dataset.draft, start: active.selectionStart, end: active.selectionEnd } : { control: detailFocusKey(active) } : null;
   const scroll = previousNode === state.selected ? detail.scrollTop : 0;
   detail.dataset.nodeId = state.selected || '';
   const n = state.visibleMap.nodes.find(n => n.id === state.selected);
@@ -308,13 +318,13 @@ function renderDetail(force = false) {
   const job = state.visibleMap.jobs.filter(j => j.nodeId === n.id).at(-1);
   const related = state.visibleMap.edges.filter(e => e.type !== 'contains' && (e.from === n.id || e.to === n.id));
   const nearby = state.visibleMap.nodes.filter(node => node.id === n.parentId || node.parentId === n.id);
-  const questionHtml = n.questions.map(q => q.answer || completed || historic ? `<div class="answer"><strong>${esc(q.text)}</strong>${q.answer ? esc(q.answer) : historic ? 'Unanswered. Return to live to continue this question.' : 'Unanswered historical question. Add a new direction to investigate it.'}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] ?? '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
+  const questionHtml = n.questions.map(q => q.answer || q.supersededAt || completed || historic ? `<div class="answer"><strong>${esc(q.text)}</strong>${q.answer ? `${q.supersededAt ? '<em>Answer from an earlier premise.</em><br>' : ''}${esc(q.answer)}` : q.supersededAt ? 'Superseded by a changed premise; no answer is needed.' : historic ? 'Unanswered. Return to live to continue this question.' : 'Unanswered historical question. Add a new direction to investigate it.'}</div>` : `<form class="question-box" data-question="${q.id}" data-node-id="${n.id}"><div class="question-label">A question for you</div><p id="question-label-${q.id}">${esc(q.text)}</p><textarea name="answer" aria-labelledby="question-label-${q.id}" placeholder="What do you think?" maxlength="12000" data-draft="${q.id}" required>${esc(state.drafts[q.id] ?? '')}</textarea><button type="submit" class="primary">Save answer & continue</button></form>`).join('');
   $('#detail').innerHTML = `<div class="detail-kind"><span class="kind-tag"><b aria-hidden="true">${glyphs[n.kind]}</b>${n.kind.charAt(0).toUpperCase() + n.kind.slice(1)}</span><span class="status-label ${pending ? 'pending' : ''}">${esc(presentation(n).label)}</span></div><h2>${esc(n.title)}</h2><p class="detail-summary">${esc(n.summary)}</p>
     ${historic ? '<p class="state-note history-detail-note">Read-only growth history. These are today’s findings and status, not a past version of the research.</p>' : ''}
     ${n.stale ? '<p class="state-note warning">An earlier premise changed. These findings need another look before you rely on them.</p>' : ''}
     ${completed && !historic ? '<p class="state-note">This branch is complete. Add a new direction to keep exploring; these findings stay here.</p>' : ''}
     ${n.status === 'suggested' && !historic ? '<p class="state-note">A possible direction. Nothing runs until you choose to explore it.</p>' : ''}
-    ${n.status === 'queued' && !historic ? `<p class="state-note">${state.bridge.listening ? 'Your agent will pick up this branch next.' : 'Saved in the queue. Connect your agent to start this investigation.'}</p>` : ''}
+    ${n.status === 'queued' && !historic ? `<p class="state-note">${agentListening() ? 'Your agent will pick up this branch next.' : 'Saved in the queue. Connect your agent to start this investigation.'}</p>` : ''}
     ${n.status === 'running' && !historic ? '<p class="state-note">Your agent is exploring this direction. New questions and findings will appear here.</p>' : ''}
     ${job?.error ? `<p class="state-note warning">${esc(job.error)}</p>` : ''}
     ${!historic ? `<div class="detail-actions">${!completed && ['suggested', 'interrupted'].includes(n.status) ? `<button class="primary" data-explore="${n.id}">${n.status === 'suggested' ? 'Explore this branch' : 'Retry exploration'}</button>` : ''}${!completed && ['queued', 'running'].includes(n.status) ? `<button class="secondary" data-cancel="${n.id}">Stop exploration</button>` : ''}${n.status === 'explored' && n.reviewState !== 'accepted' && !n.stale ? `<button class="secondary" data-accept="${n.id}">Accept finding</button>` : ''}<button class="secondary" data-branch-brief="${n.id}">Branch brief</button></div>` : ''}
@@ -329,8 +339,10 @@ function renderDetail(force = false) {
     ${job?.contextCharacters ? `<p class="run-note">Last investigation used ${job.contextCharacters.toLocaleString()} characters of map context. Only relevant context is sent.</p>` : ''}`;
   for (const editor of detail.querySelectorAll('details[data-editor]')) editor.open = Boolean(state.editors[`${n.id}:${editor.dataset.editor}`]);
   if (focus && previousNode === n.id) {
-    const field = [...detail.querySelectorAll('[data-draft]')].find(item => item.dataset.draft === focus.key);
-    if (field) { field.focus({ preventScroll: true }); if (focus.start !== null) field.setSelectionRange(focus.start, focus.end); }
+    const control = focus.key ? [...detail.querySelectorAll('[data-draft]')].find(item => item.dataset.draft === focus.key)
+      : [...detail.querySelectorAll('button, a[href], summary')].find(item => !item.disabled && detailFocusKey(item) === focus.control);
+    if (control) { control.focus({ preventScroll: true }); if (focus.key && focus.start !== null) control.setSelectionRange(focus.start, focus.end); }
+    else { detail.tabIndex = -1; detail.focus({ preventScroll: true }); }
   }
   detail.scrollTop = scroll;
 }
@@ -353,7 +365,13 @@ function act(nodeId, type, extra = {}) {
   };
   const result = actionTail.then(execute); actionTail = result.catch(() => {}); return result;
 }
-function showCreate() { $('#create-error').textContent = ''; $('#create-dialog').showModal(); $('#idea').focus(); }
+let createVersion = 0;
+function showCreate() {
+  createVersion++;
+  $('#create-error').textContent = '';
+  $('#create-form').querySelector('button[type="submit"]').disabled = false;
+  $('#create-dialog').showModal(); $('#idea').focus();
+}
 function showWelcome() {
   openVersion++; state.map = null; state.visibleMap = null; state.selected = null; state.historyStep = null; state.historySource = null; state.filter = null; localStorage.removeItem('grill-my-mind-map'); navigation(false);
   $('#welcome').classList.remove('hidden'); $('#workspace').classList.add('hidden'); $('#map-title').textContent = 'A place to think'; renderRail();
@@ -370,11 +388,25 @@ function showHelp() {
 $('#bridge-status').addEventListener('click', showHelp);
 $('#copy-prompt').addEventListener('click', async () => { try { await navigator.clipboard.writeText($('#agent-prompt').value); $('#agent-copy-status').textContent = 'Prompt copied. Paste it into your coding agent.'; } catch { $('#agent-prompt').focus(); $('#agent-prompt').select(); $('#agent-copy-status').textContent = 'Copy the selected prompt above.'; } });
 $('#create-form').addEventListener('submit', async event => {
-  event.preventDefault(); const button = event.submitter; button.disabled = true;
-  const data = new FormData(event.target); const idea = data.get('idea').trim(); const title = data.get('title').trim() || idea.split(/\s+/).slice(0, 7).join(' ').slice(0, 100);
-  try { const map = await api('/maps', { title, idea }); $('#create-dialog').close(); event.target.reset(); await refresh(); await openMap(map.id); toast('Your idea is saved. Its first exploration is queued.'); }
-  catch (error) { $('#create-error').textContent = error.message; }
-  finally { button.disabled = false; }
+  event.preventDefault();
+  const form = event.target, button = event.submitter || form.querySelector('button[type="submit"]');
+  button.disabled = true; $('#create-error').textContent = '';
+  const version = createVersion, navigationVersion = openVersion, dialog = $('#create-dialog');
+  const data = new FormData(form), submittedIdea = data.get('idea'), submittedTitle = data.get('title');
+  const idea = submittedIdea.trim(), title = submittedTitle.trim() || idea.split(/\s+/).slice(0, 7).join(' ').slice(0, 100);
+  const currentDraft = () => version === createVersion && navigationVersion === openVersion && dialog.open && $('#idea').value === submittedIdea && $('#title').value === submittedTitle;
+  try {
+    const map = await api('/maps', { title, idea });
+    await refresh();
+    const follow = currentDraft();
+    if (follow) { dialog.close(); form.reset(); await openMap(map.id); }
+    toast(follow ? 'Your idea is saved. Its first exploration is queued.' : `“${map.title}” is saved in Maps. Its first exploration is queued.`);
+  } catch (error) {
+    if (currentDraft()) $('#create-error').textContent = error.message;
+    else toast(`Could not save “${title}”: ${error.message}`);
+  } finally {
+    if (version === createVersion) button.disabled = false;
+  }
 });
 $('#open-example').addEventListener('click', async event => {
   event.target.disabled = true;
@@ -402,16 +434,31 @@ $('#detail').addEventListener('submit', async event => {
   const submittedMapId = state.map?.id;
   const form = event.target; const button = event.submitter; button.disabled = true;
   const data = Object.fromEntries(new FormData(form)); const node = form.dataset.nodeId;
-  let success = false;
-  if (form.dataset.question) success = await act(node, 'answer', { questionId: form.dataset.question, answer: data.answer });
-  if (form.id === 'suggest-form') success = await act(node, 'suggest', { title: data.title, body: data.body.trim() || data.title });
-  if (form.id === 'revise-form') success = await act(node, form.dataset.completed === 'true' ? 'fork-revision' : 'revise', data);
-  if (success) {
-    for (const field of form.querySelectorAll('[data-draft]')) delete state.drafts[field.dataset.draft];
-    if (state.visibleMap) renderDetail(state.map?.id === submittedMapId && state.selected === node);
-    toast(form.dataset.question ? 'Answer saved. Your branch will continue.' : 'Saved to your map.');
+  const fields = [...form.querySelectorAll('[data-draft]')];
+  const submittedDrafts = new Map(fields.map(field => [field.dataset.draft, field.value]));
+  // An answer is final once saved; do not allow a second, unsavable answer during the request.
+  const answerFields = form.dataset.question ? fields.map(field => [field, field.readOnly]) : [];
+  for (const [field] of answerFields) field.readOnly = true;
+  try {
+    let success = false;
+    if (form.dataset.question) success = await act(node, 'answer', { questionId: form.dataset.question, answer: data.answer });
+    if (form.id === 'suggest-form') success = await act(node, 'suggest', { title: data.title, body: data.body.trim() || data.title });
+    if (form.id === 'revise-form') success = await act(node, form.dataset.completed === 'true' ? 'fork-revision' : 'revise', data);
+    if (success) {
+      let newerDrafts = false;
+      for (const [key, value] of submittedDrafts) {
+        if (state.drafts[key] === value) delete state.drafts[key];
+        else if (state.drafts[key] !== undefined) newerDrafts = true;
+      }
+      const active = $('#detail').contains(document.activeElement) ? document.activeElement : null;
+      const preserveActiveDraft = active?.dataset.draft && (!submittedDrafts.has(active.dataset.draft) || active.value !== submittedDrafts.get(active.dataset.draft));
+      if (state.visibleMap) renderDetail(state.map?.id === submittedMapId && state.selected === node && !preserveActiveDraft);
+      toast(form.dataset.question ? 'Answer saved. Your branch will continue.' : newerDrafts ? 'Saved the submitted version. Your newer edits are kept as a draft.' : 'Saved to your map.');
+    }
+  } finally {
+    for (const [field, readOnly] of answerFields) field.readOnly = readOnly;
+    button.disabled = false;
   }
-  button.disabled = false;
 });
 $('#zoom-in').addEventListener('click', () => zoom(1.2)); $('#zoom-out').addEventListener('click', () => zoom(1 / 1.2)); $('#fit-map').addEventListener('click', fitMap);
 $('#canvas').addEventListener('wheel', event => { event.preventDefault(); if (gesture) return; const rect = $('#canvas').getBoundingClientRect(); zoom(event.deltaY < 0 ? 1.08 : 1 / 1.08, event.clientX - rect.left, event.clientY - rect.top); }, { passive: false });

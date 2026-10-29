@@ -80,7 +80,7 @@ export async function diagnose({ workspace = process.cwd(), timeout = 2500 } = {
         result.state = 'ready';
         result.ready = nodeSupported && workspaceExists && !missing.length;
         result.savedMaps = value.maps.length;
-        result.bridge = { listening: value.bridge.listening };
+        result.bridge = { listening: value.bridge.listening, ...(Array.isArray(value.bridge.scopes) ? { scopes: value.bridge.scopes } : {}) };
         add('connection', 'ok', 'The authenticated local bridge responds.');
         result.nextStep = value.bridge.listening ? 'Open the address or select a saved map with the maps command.' : 'Open the address, select a saved map if needed, and use next to listen for activated work.';
       }

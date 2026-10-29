@@ -1,4 +1,4 @@
-import { Problem, isCompleted } from './store.mjs';
+import { Problem, isCompleted, hasFindings } from './store.mjs';
 
 // Pages are tied to a map revision so a resumed read cannot silently mix versions.
 export function contextExcerpt(map, nodeId, options = {}) {
@@ -16,7 +16,7 @@ export function contextExcerpt(map, nodeId, options = {}) {
     case 'summary': records = [`# ${node.title}\nNode: ${node.id}\nWork: ${node.status}\nCompleted: ${isCompleted(map, node)}\nReview: ${node.reviewState}\nStale: ${!!node.stale}\n\n${node.summary}\n\nSections: premise, findings, questions, sources, relationships. Read only the section needed; query filters question/evidence records.`]; break;
     case 'premise': records = [node.prompt || node.body]; break;
     case 'findings': records = [node.body]; break;
-    case 'questions': records = node.questions.filter(q => !options.question || q.id === options.question).map(q => `## ${q.id}\nQuestion: ${q.text}\nAnswer: ${q.answer ?? '[Awaiting answer]'}${q.answeredAt ? `\nAnswered: ${q.answeredAt}` : ''}`); break;
+    case 'questions': records = node.questions.filter(q => !options.question || q.id === options.question).map(q => `## ${q.id}\nQuestion: ${q.text}\nAnswer: ${q.answer ?? (q.supersededAt ? '[Superseded after a premise changed; no answer recorded]' : '[Awaiting answer]')}${q.answeredAt ? `\nAnswered: ${q.answeredAt}` : ''}${q.supersededAt ? `\nSuperseded: ${q.supersededAt}` : ''}`); break;
     case 'sources': records = node.sources.map(s => `## ${s.title}\nURL: ${s.url}\nRetrieved: ${s.retrievedAt}\nEvidence: ${s.note}`); break;
     case 'relationships': records = map.edges.filter(e => e.from === node.id || e.to === node.id).map(e => `${e.from} ${e.type} ${e.to}`); break;
     default: throw new Problem('Unknown section. Use summary, premise, findings, questions, sources, or relationships.');
@@ -27,7 +27,8 @@ export function contextExcerpt(map, nodeId, options = {}) {
   if (query) records = records.filter(record => record.toLowerCase().includes(query));
   const source = records.join('\n\n');
   if (offset > source.length) throw new Problem('Offset is beyond this section.');
-  const response = { mapId: map.id, revision: map.revision, nodeId, section, totalRecords, matchingRecords: records.length,
+  const response = { mapId: map.id, revision: map.revision, nodeId, section, status: node.status, reviewState: node.reviewState, stale: !!node.stale,
+    ...(['summary', 'findings'].includes(section) ? { contentKind: hasFindings(map, node) ? 'findings' : 'premise' } : {}), totalRecords, matchingRecords: records.length,
     totalCharacters: source.length, offset, excerpt: source.slice(offset, offset + limit), nextOffset: null };
   const finish = () => { response.nextOffset = offset + response.excerpt.length < source.length ? offset + response.excerpt.length : null; };
   finish();
